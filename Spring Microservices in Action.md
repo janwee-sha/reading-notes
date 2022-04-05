@@ -1,7 +1,9 @@
 ## 1.1 什么是微服务
 
 微服务是一个小的、松耦合的分布式服务。
+
 微服务架构具有以下特征：
+
 - 应用程序逻辑分解为具有明确定义了职责范围的细粒度组件，这些组件互相协调提供解决方案。
 - 各组件都有一个小的职责领域，且完全独立部署。微服务应该对业务领域的单个领域部分赋值。此外，一个微服务应跨多个应用程序复用。
 - 微服务通信基于一些基本（非标准）的原则，并采用HTTP和JSON这样的轻量级通信协议，在服务消费者和服务提供者之间进行数据交换。
@@ -11,8 +13,11 @@
 ## 1.2 Spring为什么与微服务相关
 
 Spring已成为Java应用成都事实上的标准开发框架。Spring的核心是建立在依赖注入的概念之上的。
+
 Spring能够快速引入的特点推动了它的实际应用，成为替代J2EE的一个轻量级方案。
+
 Spring Boot是对Spring框架理念重新思考的结果。包含了Spring的核心特性，提供了一个基于Java的、面向REST的微服务框架。只需一些简单的注解，Java开发者就能快速构建一个可打包和部署的REST微服务，这个微服务并不需要外部的应用容器。
+
 在构建基于云的应用时，微服务已经成为更常见的架构模式之一，因此Spring社区为开发者提供了Spring Cloud。
 
 ## 1.5 使用Spring Boot来构建微服务
@@ -93,37 +98,37 @@ Spring Boot抽象出了常见的REST微服务任务：路由到业务逻辑、�
 
 **开发模式**：
 
-核心微服务模式（Spring Boot）
-配置管理（Spring Cloud Config）
-异步消息处理（Spring Cloud Stream）
+- 核心微服务模式（Spring Boot）
+- 配置管理（Spring Cloud Config）
+- 异步消息处理（Spring Cloud Stream）
 
 **路由模式**：
 
-服务发现模式（Spring Cloud/Netflix Eureka）
-服务路由模式（Spring Cloud/Netflix Zuul）
+- 服务发现模式（Spring Cloud/Netflix Eureka）
+- 服务路由模式（Spring Cloud/Netflix Zuul）
 
 **客户端弹性模式**：
 
-客户端负载均衡（Spring Cloud/Netflix Ribbon）
-断路器模式（Spring Cloud/Netflix Hystrix）
-后备模式（Spring Cloud/Netflix Hystrix）
-舱壁模式（Spring Cloud/Netflix Hystrix）
+- 客户端负载均衡（Spring Cloud/Netflix Ribbon）
+- 断路器模式（Spring Cloud/Netflix Hystrix）
+- 后备模式（Spring Cloud/Netflix Hystrix）
+- 舱壁模式（Spring Cloud/Netflix Hystrix）
 
 **构建部署模式**：
 
-持续集成（Travis CI）
-基础设施及代码（Docker）
-不可变服务器（Docker）
-凤凰服务器（Travis CI/Docker）
+- 持续集成（Travis CI）
+- 基础设施及代码（Docker）
+- 不可变服务器（Docker）
+- 凤凰服务器（Travis CI/Docker）
 
 **日志记录模式**：
 
-日志关联（Spring Cloud Sleuth）
-日志聚合（Spring Cloud Sleuth与Papertrail）
-微服务跟踪（Spring Cloud Sleuth/Zipkin）
+- 日志关联（Spring Cloud Sleuth）
+- 日志聚合（Spring Cloud Sleuth与Papertrail）
+- 微服务跟踪（Spring Cloud Sleuth/Zipkin）
 
 **安全模式**：
 
-授权（Spring Cloud Security/OAuth 2）
-验证（Spring Cloud Security/OAuth 2）
-凭据管理与传播（Spring Cloud Security/OAuth 2/JWT）
+- 授权（Spring Cloud Security/OAuth 2）
+- 验证（Spring Cloud Security/OAuth 2）
+- 凭据管理与传播（Spring Cloud Security/OAuth 2/JWT）
