@@ -106,6 +106,37 @@ The *provided* dependencies are available only at compile time and in the test c
 
 Note that system scope is deprecated.
 
-### 3.3.6 Import
+### 2.2.6 Import
 
 **Import scope is only available for the dependency type *pom***.
+
+*import* indicates that this dependency should be replace with all effective dependencies declared in its POM.
+
+## 2.3 Scope and Transitivity
+
+Different transitive dependencies with different scopes may end up in the prject with different scopes.Dependencies with scopes *provided* and *test* will never be included in the main project.
+
+- For the *compile* scope,all dependencies with *runtime* scope will be pulled in with the *runtime* scope in the project,and all dependencies with the *compile* scope will be pulled in with the *compile* scope in the project.
+- For the *provided* scope,both *runtime* and *compile* scope dependencies will be pulled in with the *provided* scope in the project.
+- For the *test* scope,both *runtime* and *compile* scope transitive dependencies will be pulled in with the *test* scope in the project.
+- For the *runtime* scope,both *runtime* and *compile* scope transitive dependencies will be pulled in with the *runtime* scope in the project.
+
+# 3. Maven Packaging Types
+
+## 3.1 Overview
+
+The packaging type specifies the type of artifact the project produces.
+
+**Maven offers many default packaging types and also provides the flexibility to define a custom one.**
+
+## 3.2 Default Packaging Types
+
+Maven offers many default packaging types that include a *jar*,*war*,*ear*,*pom*,*rar*,*ejb* and *maven-plugin*.**Each packaging type follows lifecycle a build lifecycle that consists of phases**.
+
+**Diferent packaging types may have different goals in a particular phase**.
+
+### 3.2.1 *jar*
+
+
+
+
