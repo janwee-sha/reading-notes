@@ -1,5 +1,79 @@
 # 卷一
 
+# 7 异常、断言和日志
+
+## 7.1 处理错误
+
+程序中可能出现的错误：
+
+- 用户输入错误
+- 设备错误
+- 物理限制
+- 代码错误
+
+在Java中，若某方法不能够采用正常的途径完成它的任务，就可以通过另外一个路径退出。在这种情况下，方法并不返回任何值，而是抛出一个封装了错误信息的对象。调用此方法的代码也将无法继续执行，取而代之的是，异常处理机制开始搜索能够处理郑重异常情况的异常处理器。
+
+### 7.1.1 异常分类
+
+Java程序中的异常对象都是派生于Throwable类的一个实例。
+
+Java异常层次结构的一个简化示意图：
+
+```
+flowchart BT
+    I(...) --> D
+	J(...) --> E
+	G(...) --> B(Error)
+	D(IOException) --> C(Exception)
+	E(RuntimeException) --> C
+	B --> A(Throwable)
+	C --> A
+```
+
+
+Error类层次结构描述了Java运行时系统的内部错误和资源耗尽错误。应用程序不应该抛出这种类型的异常。若出现了这样的内部错误，除了通告给用户，并尽力使程序安全地终止之外，再也无能为力了。
+
+Exception类层次结构使设计Java程序时需要关注的。Exception下的两个分支：
+
+- RuntimeException：程序错误导致的异常。
+- 其他异常：程序本身没有问题，但由于像I/O错误这类问题导致的异常。
+
+Java语言规范将派生于Error类或RUntimeException类的所有异常称为非受查（unchecked）异常，所有其他异常称为受查（checked）异常。
+
+### 7.2.4 finally子句
+
+不管是否有异常被捕获，finally子句都被执行。
+
+try语句可以只有finally子句，而没有catch子句。
+
+解耦try/catch和try/finally语句块的写法：
+
+```
+try {
+    try {
+        code that might throw exceptions
+    } finally {
+        close resources
+    }
+} catch (Exception e) {
+    show error message
+}
+```
+
+## 7.3 使用异常机制的技巧
+
+1. 异常处理不能代替简单的测试
+2. 不要过分地细化异常
+3. 利用异常层次结构
+
+    不要只抛出异常父类，应该寻找更加适当的子类或创建自己的异常类。
+    不要只捕获Throwable异常，否则会使代码更难读、更难维护。
+    
+4. 不要压制异常
+5. 在检测错误时，苛刻比放任更好
+6. 不要羞于传递异常
+
+
 ## 14 并发
 
 多线程程序在较低的层次上扩展了多任务的概念：一个程序同时执行多个任务。
@@ -190,6 +264,55 @@ Java对象有3个方面不同于监视器，从而使得线程的安全性下降
 - 方法不要求必须是synchronized。
 - 内部锁对客户是可用的。
 
+#### 14.5.8 Volatile域
+
+- 多处理器的计算机能够暂时在寄存器或本地缓冲区保存内存中的值。结果是，运行在不同处理器上的线程可能在同一个内存位置取到不同的值。
+- 编译器可以改变指令执行的顺序以使吞吐量最大化。这种顺序上的变化不会改变代码语义，但是编译器假定内存的值仅仅在代码中有显式的修改指令时才会改变。然而，内存的值可以被另一个线程改变！
+
+> Brian Goetz：如果向一个变量写入值，而这个变量接下来可能会被另一个线程读取，或者，从一个变量读值，而这个变量可能是之前被另一个线程写入的，此时必须使用同步。
+
+volatile关键字为实例域的同步访问提供了一种免锁机制。如果声明一个域为volatile，那么编译器和虚拟机就知道该域是可能被一个线程并发更新的。
+
+**非原子的64位操作**
+
+非volatile的long、double变量即使不考虑失效数据问题，在多线程中使用共享且可变操作也是不安全的。
+
+volatile是一种稍弱的同步机制，用以确保将变量的更新操作通知到其他线程。
+
+加锁机制可同时保证可见性、原子性，volatile变量只能确保可见性。
+
+volatile保证同步的例子：
+
+```
+private volatile boolean done;
+
+public boolean isDone() {return done};
+
+public boolean setDone(boolean done) {this.done = done;}
+```
+
+*注：Volatile变量不能提供原子性。例如：*
+
+```
+public void flipDone() {done=!done;}
+```
+*不能确保翻转域中的值。*
+
+#### 14.5.12 线程局部变量
+
+线程间共享变量存在风险。有时可能要避免共享变量，使用ThreadLocal辅助类为各个线程提供各自的实例。
+
+ThreadLocal叫做线程变量，该变量对其他线程而言是隔离的，亦即该变量是当前线程独有的变量。ThreadLocal为变量在每个线程都创建了一个副本。
+
+ThreadLocal提供了线程本地的实例。它与普通变量的区别在于，每个使用该变量的线程都会初始化一个完全独立的副本。ThreadLocal变量通常被private static修饰。当一个线程结束时，它所使用的说有ThreadLocal对应的实例副本都可被回收。
+
+ThreadLocal与synchronized的区别在于，synchronized用于线程间的数据共享，而ThreadLocal用于线程间的数据隔离。
+
+#### 14.5.14 读/写锁
+
+java.util.concurrent.locks包定义了两个锁类，ReentrantLock类和ReentrantLockWriteLock类。如果很多线程从一个数据结构读取数据而很少线程修改其中数据的话，后者是十分有用的。
+
+
 #### 14.5.15 为什么弃用stop和suspend方法
 
 stop和suspend都有一些共同点：都试图控制一个给定线程的行为。
@@ -199,3 +322,67 @@ stop方法终止所有未结束的方法，包括run方法。当线程被终止�
 当线程要终止另一个线程时，无法知道什么时候调用stop方法是安全的，什么时候导致对象被破坏。
 
 如果suspend挂起一个持有一个锁的线程，那么，该锁在恢复之前是不可用的。如果调用suspend方法的线程试图获取同一个锁，那么程序死锁：被挂起的线程等着被恢复，而将其挂起的线程等待恢复锁。
+
+### 14.6 阻塞队列
+
+当试图向队列添加元素而队列已满，或是想从队列移出元素而队列为空的时候，阻塞队列（blocking queue）导致线程阻塞。在协调多个线程之间的合作时，阻塞队列是一个有用的工具。工作者线程可以周期性地将中间结果存储在阻塞队列中。其他工作者线程移出结果并进一步加以修改。队列会自动地平衡负载。若第一个线程集运行得比第二个慢，第二个线程集在等待结果时会阻塞。若第二个线程集运行得快，它将等待第二个队列集赶上来。
+
+阻塞队列方法：
+
+
+| 方法 | 正常动作 | 特殊情况下的动作 |
+| --- | --- | --- |
+| add | 添加一个元素 | 若队列满，抛出IllegalStateException |
+| element | 返回头元素 | 若队列空，抛出NoSuchElementException |
+| remove | 移出并返回头元素 | 若队列空，抛出NoSuchElementException |
+| offer | 添加一个元素并返回true | 若队列慢，返回false |
+| peek | 返回头元素 | 若队列空，返回null |
+| poll | 移出并返回头元素 | 若队列空，返回null |
+| put | 添加一个元素 | 若队列满，则阻塞 |
+| take | 移出并返回头元素 | 若队列空，则阻塞 |
+
+阻塞队列的方法按响应方式分为3类。若将队列作线程管理工具用，将要用到put、take方法。
+
+*poll和peek方法返回null来指示失败。因此，向这些队列中插入null值是非法的。*
+
+阻塞队列的变种：
+
+- LinkedBlockingQueue，容量是没有上边界的，但可指定最大容量。
+- LinkedBlockingDeque：前者的双端版本。
+- ArrayBlockingQueue：在构造时需要指定容量，且有一个可选的参数来指定是否需要公平性。若设置了公平性，等待时间最长线程会优先得到处理。
+- PriorityBlockingQueue：是一个带优先级的队列，而不是先进先出队列。该队列没有容量上限，取元素的操作会阻塞。
+- DelayQueue：包含了实现Delayed接口的对象。
+
+### 14.7 线程安全的集合
+
+（待读）
+
+### 14.8 Callable和Future
+
+Callable：
+
+```
+interface Callable<V> {
+    V call() throws Exception;
+}
+```
+
+Future:
+
+```
+interface Future<V> {
+    V get() throws ...;
+    V get(long timeout, TimeUnit unit) throws ...;
+    void cancel(boolean mayInterrupt);
+    boolean isCancelled();
+    boolean isDone();
+}
+```
+
+第一个get方法调用被阻塞，直到计算完成。如果在计算完成之前，第二个get方法的调用超时，抛出一个TimeoutException异常。若运行线程被中断，两者都将抛出InterruptedException。若计算已完成，则返回true。
+
+若计算还在进行，isDone返回false；否则返回true。
+
+可用cancel方法取消该计算。若计算还未开始，它被取消且不再开始。若计算运行中，那么如果mayInterrupt参数为true，它就被中断。
+
+FutureTask包装器是一种非常便利的机制，可将Callable转换成Future和Runnable，它同时实现二者的接口。
