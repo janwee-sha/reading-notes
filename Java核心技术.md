@@ -19,8 +19,8 @@ Java程序中的异常对象都是派生于Throwable类的一个实例。
 
 Java异常层次结构的一个简化示意图：
 
-```
-flowchart BT
+```mermaid
+	graph BT
     I(...) --> D
 	J(...) --> E
 	G(...) --> B(Error)
