@@ -1,8 +1,8 @@
 # 卷一
 
-# 7 异常、断言和日志
+## 7 异常、断言和日志
 
-## 7.1 处理错误
+### 7.1 处理错误
 
 程序中可能出现的错误：
 
@@ -13,7 +13,7 @@
 
 在Java中，若某方法不能够采用正常的途径完成它的任务，就可以通过另外一个路径退出。在这种情况下，方法并不返回任何值，而是抛出一个封装了错误信息的对象。调用此方法的代码也将无法继续执行，取而代之的是，异常处理机制开始搜索能够处理郑重异常情况的异常处理器。
 
-### 7.1.1 异常分类
+#### 7.1.1 异常分类
 
 Java程序中的异常对象都是派生于Throwable类的一个实例。
 
@@ -40,7 +40,7 @@ Exception类层次结构使设计Java程序时需要关注的。Exception下的�
 
 Java语言规范将派生于Error类或RUntimeException类的所有异常称为非受查（unchecked）异常，所有其他异常称为受查（checked）异常。
 
-### 7.2.4 finally子句
+#### 7.2.4 finally子句
 
 不管是否有异常被捕获，finally子句都被执行。
 
@@ -60,7 +60,7 @@ try {
 }
 ```
 
-## 7.3 使用异常机制的技巧
+### 7.3 使用异常机制的技巧
 
 1. 异常处理不能代替简单的测试
 2. 不要过分地细化异常
@@ -73,6 +73,101 @@ try {
 5. 在检测错误时，苛刻比放任更好
 6. 不要羞于传递异常
 
+## 9 集合
+
+### 9.1 Java集合框架
+
+#### 9.1.1 将集合的接口和实现分离
+
+队列通常有两种实现方式：一种是使用循环数组；另一种是使用链表。
+
+循环数组要比链表更高效，因此多数人有限选择循环数组。
+
+循环数组是一个有界集合，即容量有限。如果程序中要收集的对象数量没有上限，就最好使用链表来实现。
+
+#### 9.1.3 迭代器
+
+用“for each”循环可以更加简练地表示同样地循环操作。编译器简单地将“for each”循环翻译为带有迭代器的循环。
+
+“for each”循环可以与任何实现了Iterable接口的对象一起工作，这个接口只包含`Iterator<E> iterator();`一个抽象方法。
+
+在Java SE 8中，甚至不用写循环。可以调用forEachRemaining方法。
+
+Iterator接口的remove方法将会删除上次调用next方法时返回的元素。若想要删除指定位置上的元素，仍然需要越过这个元素。如，删除集合中第一个元素的方法：
+
+```
+Iterator<Integer> it = nums.iterator();
+it.next();//skip over the first element
+it.remove;//now remove it
+```
+
+对next方法和remove方法的调用具有互相依赖性。若调用remove前没有调用next将是不合法的。这样做会抛出一个IllegalStateException异常。
+
+#### 9.1.5 
+
+集合框架中的接口：
+
+```mermaid
+	graph BT
+	B(Collection) --> A(Iterable)
+	C(List) --> B
+	D(Set) --> B
+	E(Queue) --> B
+	F(SortedSet) --> D
+	G(NavigableSet) --> F
+	H(Deque) --> E
+	I(SortedMap) --> J(Map)
+	K(NavigableMap) --> I
+	L(ListIterator) --> M(Iterator)
+	N(RandomAccess)
+```
+
+集合有两个基本接口：Collection和Map。
+
+List是一个有序集合（ordered collection）。元素会增加到容器中的特定位置。可以采用两种方式访问元素：使用迭代器访问，或者使用一个整数索引来访问。后者称为任意访问（random access），因为这样可以按任意顺序访问元素。前者须顺序访问。
+
+List接口定义了很多用于随机访问的方法：
+
+```
+void add(int index, E element);
+void remove(int index);
+E get(int index);
+E set(int index, E element);
+```
+
+ListIterator是Iterator的一个子接口，它定义了一个方法用于在迭代器位置前面增加一个元素：
+
+```
+void add(E element);
+```
+
+实际中有两种有序集合，其性能开销有很大差异。由数组支持的有序集合可以快速地随机访问，因此适合使用List方法并提供一个整数索引来访问。与之不同，链表尽管也是有序的，但是随机访问很慢，所以最好使用迭代器来遍历。如果原先提供两个接口就会容易一些了。
+
+> 注释：为了避免对链表完成随机访问操作，Java SE 1.4引入了一个标记接口RandomAccess。这个接口不包含任何方法，不过可以用它来测试一个特定的集合是否支持高效的随机访问。
+
+Set接口等同于Collection接口，不过其方法的行为有更严谨的定义。集（Set）的add方法不允许增加重复的元素。要适当地定义集地equals方法，只要两个集包含同样地元素就认为是相等地，而不要求这些元素有同样的顺序。hashCode方法的定义要保证包含相同元素的两个集会得到相同的散列码。
+
+SortedSet和SortedMap接口会提供用于排序的比较器对象，这两个接口定义了可以得到集合子集视图的方法。
+
+Java SE 6引入了接口NavigableSet和NavigableMap，其中包含一些用于搜索和遍历有序集和映射的方法。（理想情况下，这些方法本应当直接包含在SortedSet和SortedMap接口中。）TreeSet和TreeMap类实现了这些接口。
+
+### 9.2 具体的集合
+
+Java库中的具体集合：
+
+- ArrayList：一种可以动态增长和缩减的索引序列。
+- LinkedList：一种可以在任何位置进行高效地插入和删除操作的有序序列。
+- ArrayDeque：一种用循环数组实现的双端队列。
+- HashSet：一种没有重复元素的无序集合。
+- TreeSet：一种有序集。
+- EnumSet：一种包含枚举类型值的集。
+- LinkedHashSet：一种可以记住元素插入次序的集。
+- PriorityQueue：一种允许高效删除最小元素的集合。
+- HashMap：一种存储键/值关联的数据结构。
+- TreeMap：一种键值有序排列的映射表。
+- LinkedHashMap：一种可以记住键/值项添加次序的映射表。
+- WeakHashMap：一种其值无用后可以呗垃圾回收器回收的映射表。
+- IdentityHashMap：一种用==而不是用equals比较键值的映射表。
 
 ## 14 并发
 
