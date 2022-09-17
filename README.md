@@ -10,8 +10,8 @@ Here are some of my notes:
 
 # Spring
 
-*   [Craig Walls's Spring in Action](https://github.com/janwee-sha/reading-notes/blob/main/Spring/SpringInAction.md)
-*   [John Carnell's Spring Microservices in Action](https://github.com/janwee-sha/reading-notes/blob/main/Spring/SpringMicroservicesInAction.md)
+*   [Craig Walls's Spring in Action](https://github.com/janwee-sha/reading-notes/blob/main/Spring/Spring.in.Action.md)
+*   [John Carnell's Spring Microservices in Action](https://github.com/janwee-sha/reading-notes/blob/main/Spring/Spring.Microservices.in.Action.md)
 
 # Kotlin
 
@@ -21,8 +21,8 @@ Here is my reading list:
 
 # SQL
 
-*   [Baron Schwartz, Peter Zaitsev, and Vadim Tkachenko's High Performance MySQL](https://github.com/janwee-sha/reading-notes/blob/main/SQL/HighPerformanceMySQL.md)
-*   [MySQL in a NutShell(2nd Edition)](https://github.com/janwee-sha/reading-notes/blob/main/SQL/MySQL%20in%20a%20NutShell(2nd%20Edition).md)
+*   [Baron Schwartz, Peter Zaitsev, and Vadim Tkachenko's High Performance MySQL](https://github.com/janwee-sha/reading-notes/blob/main/SQL/High.Performance.MySQL.md)
+*   [MySQL in a NutShell(2nd Edition)](https://github.com/janwee-sha/reading-notes/blob/main/SQL/MySQL.in.a.NutShell.2nd.Edition.md)
 
 # NoSQL
 
