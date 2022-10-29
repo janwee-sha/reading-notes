@@ -16,7 +16,7 @@ React的虚拟DOM是模仿或镜像存在于浏览器中的文档对象模型的
 
 图1.3展示了DOM和虚拟DOM之间的关系。
 
-![image](https://github.com/janwee-sha/reading-notes/blob/main/Back-end/React.in.Action.Graph.1-3.png)
+![image](https://github.com/janwee-sha/reading-notes/blob/main/Front-end/React.in.Action.Graph.1-3.png)
 
 ### 1.3.1 DOM
 
