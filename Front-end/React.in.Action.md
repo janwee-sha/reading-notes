@@ -14,3 +14,14 @@ React的思维模型广泛适用了函数式和面向对象编程的概念，并
 
 React的虚拟DOM是模仿或镜像存在于浏览器中的文档对象模型的数据结构或数据结构的集合。通常，虚拟DOM会作为应用程序和浏览器DOM之间的中间层。虚拟DOM像开发人员隐藏了变更检测与管理的复杂性并将其转移到专门的抽象层。
 
+图1.3展示了DOM和虚拟DOM之间的关系。
+
+![image](https://github.com/janwee-sha/reading-notes/blob/main/Back-end/React.in.Action.Graph.1-3.png)
+
+### 1.3.1 DOM
+
+DOM或文档对象模型是一个允许JavaScript与不同类型的文档（HTML、XML或SVG）进行交互的编程接口。它有标准驱动的规范，这意味着公共工作组已经建立了它应该具有的标准特性集以及行为方式。虽然存在其他实现，但是DOM几乎已经是Chrome、Firefox和Edge等Web浏览器的代名词了。
+
+DOM提供过了访问、存储和操纵文档不同部分的结构化方式。从较高层面来讲，DOM是一种反映了XML文档层次结构的树形结构。这个数结构由子树组成，子树由节点组成。这些是组成Web页面和应用的div和其他元素。
+
+你在JavaScript中使用的方法不全是JavaScript语言本身的一部分（document.findElementById、querySelectorAll、alert等）。它们是更大的Web API集合（浏览器中的DOM和其他API）的一部分。
