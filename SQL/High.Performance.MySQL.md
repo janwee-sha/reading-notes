@@ -93,7 +93,7 @@ MySQL在CREATE TABLE和其他语句中使用的是"BTREE"关键字，但存储�
 
 The general idea of a B-Tree is that all the values are stored in order and each leaf page is the same distance from the root.
 
-![image](https://note.youdao.com/yws/res/13017/WEBRESOURCEf1b6f4287c88ca798f6925dade6c2a5e) &#x20;
+![image](https://github.com/janwee-sha/reading-notes/blob/main/SQL/High.Performance.MySQL.Graph.5-1.png)
 
 叶子节点比较特别，它们的指针指向的是被索引的数据，而不是其他的节点页。
 
@@ -252,11 +252,14 @@ MyISAM中主键索引和其他索引在结构上没有什么不同。主键索�
 
 索引确实是一种查找数据的高效方式，但MySQL也可以使用索引来直接获取列的数据，这样就不再需要读取数据行。如果一个索引包含所有需要查询的字段的值，我们称之为“覆盖索引”。
 
-覆盖索引的优点：
+覆盖索引是非常有用的工具，能够极大地提高性能。考虑一下如果查询只需要扫描索引而无须徽标，会带来多少好处：
 
 *   索引条目通常远小于数据行大小，极大减少了数据访问量。
 *   索引按列值顺序存储，对于I/O密集型的范围查询会比随机从磁盘读取每一行数据的I/O要少得多。
 *   某些存储引擎（如MyISAM）在内存中缓存索引，数据则依赖于操作系统来缓存，减少系统调用会极大提升性能。
+*   由于InnoDB的聚族索引，覆盖索引对InnoDB表特别有用。InnoDB的二级索引在叶子节点中保存了行的主键值，所以如果二级主键能够覆盖查询，则可以避免对主键索引的二级查询。
+
+不是所有类型的索引都可以成为覆盖索引。覆盖索引必须要存储索引列的值，而哈希索引、空间索引和全文索引等都不存储索引列的值，所以MySQL只能使用B-Tree索引做覆盖索引。另外，不同的存储引擎对覆盖索引的实现方式也不同，而且不是所有引擎都支持覆盖索引。
 
 ### 5.3.7 使用索引扫描来做排序
 
