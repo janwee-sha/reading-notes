@@ -253,7 +253,7 @@ MyISAM中主键索引和其他索引在结构上没有什么不同。主键索�
 
 索引确实是一种查找数据的高效方式，但MySQL也可以使用索引来直接获取列的数据，这样就不再需要读取数据行。如果一个索引包含所有需要查询的字段的值，我们称之为“覆盖索引”。
 
-覆盖索引是非常有用的工具，能够极大地提高性能。考虑一下如果查询只需要扫描索引而无须徽标，会带来多少好处：
+覆盖索引是非常有用的工具，能够极大地提高性能。考虑一下如果查询只需要扫描索引而无须回表，会带来多少好处：
 
 *   索引条目通常远小于数据行大小，极大减少了数据访问量。
 *   索引按列值顺序存储，对于I/O密集型的范围查询会比随机从磁盘读取每一行数据的I/O要少得多。
@@ -347,6 +347,45 @@ SELECT * FROM person INNER JOIN (
 ```
 
 > 注：**MySQL延迟关联策略**，指“延迟了对列的访问”，不直接获取所有需要的列。在查询的第一阶段MySQL使用覆盖索引，再通过覆盖索引查询到的结果到外层匹配需要的所有列值。（引用自 [腾讯云专栏文章](https://cloud.tencent.com/developer/article/1693976#:~:text=%E5%BB%B6%E8%BF%9F%E5%85%B3%E8%81%94%EF%BC%88%20deferred%20join,%EF%BC%89%E6%8C%87%E3%80%8C%E5%BB%B6%E8%BF%9F%E4%BA%86%E5%AF%B9%E5%88%97%E7%9A%84%E8%AE%BF%E9%97%AE%E3%80%8D%EF%BC%8C%E4%B8%8D%E7%9B%B4%E6%8E%A5%E8%8E%B7%E5%8F%96%E6%89%80%E6%9C%89%E9%9C%80%E8%A6%81%E7%9A%84%E5%88%97%E3%80%82%20%E5%9C%A8%E6%9F%A5%E8%AF%A2%E7%9A%84%E7%AC%AC%E4%B8%80%E9%98%B6%E6%AE%B5%20MySQL%20%E4%BD%BF%E7%94%A8%E8%A6%86%E7%9B%96%E7%B4%A2%E5%BC%95%EF%BC%8C%E5%86%8D%E9%80%9A%E8%BF%87%E8%AF%A5%E8%A6%86%E7%9B%96%E7%B4%A2%E5%BC%95%E6%9F%A5%E8%AF%A2%E5%88%B0%E7%9A%84%E7%BB%93%E6%9E%9C%E5%88%B0%E5%A4%96%E5%B1%82%E6%9F%A5%E8%AF%A2%E5%8C%B9%E9%85%8D%E9%9C%80%E8%A6%81%E7%9A%84%E6%89%80%E6%9C%89%E5%88%97%E5%80%BC%E3%80%82)） 
+
+## 5.5 Index and Table Maintaince
+
+The three goals of table maintenance are finding and fixing corruption, maintaining accurate index statistics, and reducing fragmentation.
+
+### 5.5.1 Finding and Repairing Table Corruption
+
+The worst thing that can happen to a table is corruption. With the MyISAM storage engine, this often happens due to crashes. However, all storage engines can experience index corruption due to hardware problems or internal bugs in MySQL or the operating system.
+
+Corrupted indexes can cause queries to return incorrect results, raise duplicate-key errors when there is no duplicated value, or even cause lockups and crashes. `CHECK TABLE` usually catches most table and index errors.
+
+You can fix corrupt tables with the `REPAIR TABLE` command, but again, not all storage engines support this. In this case you can do a "no-op" `ALTER`, such as altering a table to use the same storage engine it currently use. Alternatively, you can either use an offline engine-specific repair utility, or dump the data and roload it.
+
+### 5.5.3 Reducing Index and Data Fragmentation
+
+B-tree indexes can become fragmented, which might reduce performance. Fragmented indexes can be poorly filled and/or nonsequential on disk.
+
+By design B-Tree indexes require random disk access to "dive" to the leaf pages, so random access is the rule, not the exception. However, the leaf pages can still perform better if they are physically sequential and tightly packed. If they are not, we say they are fragmented, and range scans or full index scans can be many times slower. This is especially true for index-covered queries.
+
+The table's data storage can also become fragmented. However, data storage fragmentation is more complex than index fragmentation. There are three types of data fragmentation:
+
+**Row fragmentation**
+
+This type of fragmentation occurs when the row is stored in multiple pieces in multiple locations. Row fragmentation reduces performance even if the query needs only a single row from the index.
+
+**Intra-row fragmentation**
+
+This kind of fragmentation occurs when logically sequential pages or rows are not stored sequentially on disk. It affects operations such as full table scans and clustered index range scans, which normally benefit from a sequential data layout on disk.
+
+**Free space fragmentation**
+
+This type of fragmentation occurs when there is a lot of empty space in data pages. It causes the server to read a lot of data it doesn't need, which is wasteful.
+
+Solutions for fixing fragmentation:
+
+- run `OPTIMIZE TABLE`
+- dump and reload data
+- rebuild table with a no-op `ALTER TABLE` 
+
 
 # 第6章 查询性能优化
 
