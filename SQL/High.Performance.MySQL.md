@@ -403,6 +403,62 @@ Solutions for fixing fragmentation:
 
 ### 6.2.1 Are You Asking the Database for Data You Don't Need?
 
+Here are a few typical mistakes:
+
+- Fetching more rows than needed
+- Fetching all columns from a multitable join
+- Fetching all columns
+- Fetching the same data repeatedly
+
+### 6.2.2 Is MySQL Examining Too Much Data?
+
+The simplest query cost metric are:
+
+- Response time
+- Number of rows examined
+- Number of rows returned
+
+## 6.3 重构查询的方式
+
+### 6.3.1 一个复杂查询还是多个简单查询
+
+MySQL内部每秒能够扫描内存中上百万行数据，相比之下，MySQL响应数据给客户端就慢得多了。在其他条件都相同的时候，使用尽可能少的查询当然是更好的。但有时候，将一个大查询分解为多个小查询是很有必要的。
+
+### 6.3.2 切分查询
+
+有时候对于一个大查询需要“分而治之”，将大查询切分成小查询，每个查询功能完全一样，只完成一小部分，每次只返回一小部分查询结果。
+
+这样可以将服务器上原本一次性的压力分散到一个很长的时间段中，就可以大大降低对服务器的影响，还可以大大减少锁的持有时间。
+
+### 6.3.3 Join Decomposition
+
+Many high-performance applications use join decomposition.
+
+For example, instead of this simple query:
+
+```
+SELECT * FROM tag
+    JOIN tag_post ON tag_post.tag_id = tag.id
+    JOIN post ON tag_post.post_id = post.id
+WHERE tag.tag = 'mysql';
+```
+
+You might run these queries:
+
+```
+SELECT * FROM tag WHERE tag = 'mysql';
+SELECT * FROM tag_post WHERE tag_id = ...;
+SELCT * FROM post WHERE post.id IN (...);
+```
+
+Such restructuring can actually give significant performance advantages:
+
+- Caching can be more efficient. Many applications cache "objects" that map directly to tables. If only one of the tables changes frequently,decomposing a join can reduce the number of cache invalidations.
+- Executing the queries individually can sometimes reduce lock contention.
+- Dosing joins in the application makes it easier to scale the database by placing tables on different servers.
+- The queries themselves can be more efficient.
+- You can reduce redundant row accesses.
+- You can view this technique as manually implementing a hash join instead of nested loops algorithms MySQL uses to execute a join.
 
 ## 6.4 查询执行的基础
 
@@ -418,7 +474,90 @@ MySQL执行查询的过程：
 
 MySQL客户端和服务器之间的通信协议是“半双工”的。任意时刻要么是客户端向服务器发送数据，要么是服务器向客户端发送数据，两个动作不会同时发生。
 
+这种协议让MySQL通信简单快速，但是也从很多地方限制了MySQL。一个明显的限制是，没法进行流量控制。一旦一段开始发送消息，另一端要接收完整个消息才能响应它。
+
+客户端用一个单独的数据包将查询结果传给服务器。因此当查询语句很长的时候，参数`max_allowed_packet`就特别重要了。
+
+相反的，一般服务器相应给用户的数据由多个数据包组成。这也是在必要的时候一定要在查询中加上`LIMIT`限制的原因。
+
 多数连接MySQL的库函数都可以获得全部结果集并缓存到内存里，还可以逐行获取需要的数据。
+
+**Query states**
+
+The states and their explainations:
+
+- Sleep, the thread is waiting for a new query from the client.
+- Query, the thread is either executing the query or sending the result back to the client.
+- Locked, the thread is waiting for a table lock to be granted at the server level.
+- Analyzing and statistics, the thread is checking storage engine statistics and optimizing the query.
+- Copying to tmp table [on disk], the thread is processing the query and copying results to a temporary table, probably for a `GROUP BY`, for a filesort, or to satisfy a `UNION`.
+- Sorting result, the thread is sorting a result set.
+- Sending data, this can mean several things: the thead might be sending data between stages of the query, gnerating the result set, or returning the result set to the client.
+
+### 6.4.2 The Query Cache
+
+Before even parsing a query, MySQL checks for it in the query cache, if the cache is enabled. This operation is a case-sensitive hash lookup. If it won't match, and the query processing will go to the next stage.
+
+If MySQL does find a match in the query cache it must check privileges before returning the cached query. This is possible without parsing the query, because MySQL stores table information with the cached query. If the privileges are OK, MySQL retrieves the stored result from the query cache and sends it to the client, bypassing every other stage in query execution. The query is never parsed, optimized, or executed.
+
+### 6.4.3 The Query Optimization Process
+
+This step turns a SQL into a execution plan for the query engine. It has several substeps: parsing, processing, and optimization. Errors (for example, syntax errors) can be raised at any point in the process.
+
+**The parser and the preprocessor**
+
+To begin, MySQL's *parser* breaks the query into tokens and builds a "parse tree" from them. The parser uses MySQL's SQL grammar to interpret and validate the query. For instance, it ensure that the tokens in the query are valid and in the proper order, and it checks for mistakes such as quoted strings that aren't terminated.
+
+The *preprocessor* then checks the resulting parse tree for additional semantics that the parser can't resolve. For example, it checks that tables and columns exist, and it resolves names and aliases to ensure that column references aren't ambiguous.
+
+Next, the preprocessor checks privileges.
+
+**The query optimizer**
+
+The parse tree is now valid and ready for the *optimizer* to turn it into a query execution plan. A query can often executed many different ways and produce the same result. The optimizer's job is to find the best option.
+
+MySQL使用基于成本的优化器，它将尝试预测一个查询使用某种执行计划时的成本，并选择其中成本最小的一个。最初，成本的最小单位是随机读取一个4K数据页的成本，后来变得更加复杂，且引入了一些“因子”来估算某些操作的代价，如当执行一次WHERE条件比较的成本。可以通过查询当前会话的`Last_query_cost`的值来得知MySQL计算的当前查询的成本。
+
+```
+mysql> SELECT SQL_NO_CACHE COUNT(*) FROM person;
++----------+
+| COUNT(*) |
++----------+
+|     5462 |
++----------+
+
+mysql> SHOW STATUS LIKE 'Last_query_cost';
++-----------------+------------+
+| Variable_name   | Value      |
++-----------------+------------+
+| Last_query_cost |1040.399000 |
++-----------------+------------+
+```
+
+这个结果表明大概需要做1040个数据页的随机查找才能完成上面的查询。这是根据一系列统计信息得来的：每个表或者索引的页面个数、索引的基数（不同索引值的数量）、索引和数据行的长度、索引分布情况。优化器在评估成本的时候并不考虑任何层面的缓存，它假设读取任何数据都需要一次磁盘I/O。
+
+有很多原因会导致MySQL优化器选择错误的执行计划，如：
+
+- 统计信息不准确
+- 执行计划中的成本估算不等同于实际执行的成本
+- MySQL的最优可能和你想的最优不一样
+- MySQL从不考虑其他并发执行的查询，这可能影响到当前查询的速度
+- MySQL也并不是任何时候都是基于成本的优化
+- MySQL不会考虑不受其控制的操作的成本，如执行存储过程或用户自定义函数的成本
+- 优化器有时候无法去估算所有可能的执行计划，所以它可能错过实际上最优的执行计划
+
+MySQL优化策略可以简单分为两种：
+
+- 静态优化，可以直接对解析树进行分析，并完成优化
+- 动态优化，与查询上下文有关，也可能和很多其他因素有关，如WHERE条件中的取值、索引中条目对应的数据行数等。
+
+MySQL能够处理的优化器类型：
+
+- 重新定义关联表的顺序。数据表的关联并不总是按照查询中执行的顺序进行。
+- 将外连接转化为内连接。并不是所有的`OUTER JOIN`语句都必须以外连接的方式执行。
+- 使用等价变换规则。MySQL可以使用一些等价变换来简化并规范表达式。
+- 优化`COUNT()`、`MIN()`和`MAX()`。索引和列是否可为空通常可以帮助MySQL优化这类表达式。
+- 预估并转化为尝试表达式。
 
 # Chapter 7. Advanced MySQL Features
 
