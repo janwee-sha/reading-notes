@@ -1,4 +1,4 @@
-> The following contents are reading notes of [High Performance MySQL, 3rd Edition](https://learning.oreilly.com/library/view/high-performance-mysql/9781449332471/)
+> The following contents are a reference of [High Performance MySQL, 3rd Edition](https://learning.oreilly.com/library/view/high-performance-mysql/9781449332471/)
 
 # Chapter 4. Optimizing Schema and Data Types
 
@@ -387,7 +387,22 @@ Solutions for fixing fragmentation:
 - rebuild table with a no-op `ALTER TABLE` 
 
 
-# 第6章 查询性能优化
+# Chapter 6 Query Performance Optimization
+
+## 6.1 Why are Queries Slow?
+
+通常来说，查询的生命周期包括：
+
+1. 从客户端到服务器
+2. 服务器进行解析
+3. 生成执行计划
+4. 执行（包括存储引擎的调用以及调用后的数据处理）
+5. 返回给客户端
+
+## 6.2 Slow Query Basics: Optimize Data Access
+
+### 6.2.1 Are You Asking the Database for Data You Don't Need?
+
 
 ## 6.4 查询执行的基础
 
