@@ -30,6 +30,14 @@ If `i` is the index of a node, then the following formulas give the array indice
     left(i) = 2i +1
     right(i) = 2i +2
 
+Note that this scheme has limitations. You can do the following with a regular binary tree but not with a heap.
+
+![image](https://github.com/janwee-sha/reading-notes/blob/main/DataStructureAndAlgorithm/images/Algorithms.RegularTree.png)
+
+You can not start a new level unless the current lowest level is completely full, so heaps always have this kind of shape.
+
+![image](https://github.com/janwee-sha/reading-notes/blob/main/DataStructureAndAlgorithm/images/Algorithms.HeapShape.png)
+
 ### 1.1.3 What can you do with a heap?
 
 There are two primitive operations necessary to make sure the heap is a valid max-heap or min-heap after you insert or remove an element:
