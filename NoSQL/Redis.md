@@ -1,10 +1,14 @@
-# Redis简介
+> 以下内容引用自付磊、张益军《Redis开发与运维》
+
+# 第1章 初识Redis
+
+## 1.1 Redis简介
 
 Redis是一个速度非常快的非关系数据库。
 
-# Redis特性
+## 1.2 Redis特性
 
-## 速度快
+**1. 速度快**
 
 Redis速度快的原因：
 
@@ -13,11 +17,11 @@ Redis速度快的原因：
 *   使用了单线程架构，预防了多线程可能产生的竞争问题；
 *   Redis源代码精打细磨，集性能和优雅于一身。
 
-## 基于键值对的数据结构服务器
+**2. 基于键值对的数据结构服务器**
 
-与很多键值对数据库不同的是，Redis中的值不仅可以是字符串，还可以是具体的数据结构。
+与很多键值对数据库不同的是，Redis中的值不仅可以是字符串，还可以是具体的数据结构。主要提供5种数据结构：字符串、哈希、列表、集合、有序集合。
 
-## 丰富的功能
+**3. 丰富的功能**
 
 *   键过期功能，可用来实现缓存；
 *   发布订阅功能，可用来实现消息系统；
@@ -25,67 +29,191 @@ Redis速度快的原因：
 *   简单的事务功能，能在一定程度上保证事务特性；
 *   流水线（Pipeline）功能，使客户端能将一批命令一次性传到Redis，减少了网络的开销。
 
-## 简单稳定
+**4. 简单稳定**
 
 早期版本源码只有2万行左右，单线程模型，也使得客户端开发变得简单，且Redis不依赖操作系统的类库。
 
-## 客户端语言多
+**5. 客户端语言多**
 
 Redis提供了简单的TCP通信协议，很多编程语言可以很方便地接入到Redis，且由于Redis收到社区和各大公司地广泛认可，所以支持Redis的客户端语言也非常多，如Java、PHP、Python、C、C++、Node js等。
 
-## 持久化
+**6. 持久化**
 
 一般来说，将数据放在内存中是最不安全的，一旦发生断点或者及其故障，重要的数据可能就会丢失，因此redis提供了两种持久化方式：RDB和AOF。
 
-## 主从复制
+**7. 主从复制**
 
 Redis提供了复制功能，实现了多个相同数据的Redis副本，复制功能是分布式Redis的基础。
 
-## 高可用和分布式
+**8. 高可用和分布式**
 
 Redis从2.8版本正式提供了高可用实现Redis Sentinel，它能够保证Redis节点的故障发现和故障自动转移。Redis从3.0版本正式提供了分布式实现Redis Cluster，它是Redis真正的分布式实现，提供了高可用、读写和容量的扩展性。
 
-# Redis应用
+# 1.3 Redis使用场景
 
-*   缓存
-*   排行榜系统
-*   计数器应用
-*   社交网络
-*   消息队列系统
+*   **缓存**，缓存机制几乎在所有的大型网站都有使用，合理地使用缓存不仅可以加快数据的访问速度，而且能够有效地降低后端数据源的压力。
+*   **排行榜系统**，Redis提供了列表和有序集合数据结构，合理地使用这些数据结构可以很方便地构建各种排行榜系统。
+*   **计数器应用**，Redis天然支持计数功能而且计数的性能也非常好，可以说是计数器系统的重要选择。
+*   **社交网络**
+*   **消息队列系统**，Redis提供了发布订阅功能和阻塞队列功能。
 
-# 配置、启动、操作、关闭Redis
+## 1.5 正确安装并启动Redis
 
-## Redis可执行文件
+### 1.5.2  配置、启动、操作、关闭Redis
 
-*   redis-server：启动Redis
-*   redis-cli：Redis命令行客户端
-*   redis-benchmark：Redis基准测试工具
-*   redis-check-aof：Redis AOF持久化文件检测和修复工具
-*   redis-check-dump：Redis RDB持久化文件检测和修复工具
-*   redis-sentinel启动Redis Sentinel
+**Redis可执行文件**：
 
-## 启动Redis
+*   *redis-server*，启动Redis
+*   *redis-cli*，Redis命令行客户端
+*   *redis-benchmark*，Redis基准测试工具
+*   *redis-check-aof*，Redis AOF持久化文件检测和修复工具
+*   *redis-check-dump*，Redis RDB持久化文件检测和修复工具
+*   *redis-sentinel*，启动Redis Sentinel
 
-### 三种启动方式
+**1. 启动Redis**
+
+三种启动方式：
 
 *   默认配置
 
-redis-server命令不带任何参数即为默认配置。
+`redis-server`命令不带任何参数即为默认配置。
 
 *   运行配置
 
-redis-server [--配置键1] [配置值1] ...
+`redis-server [--配置键1] [配置值1]...`
 
 *   配置文件启动
 
-redis-server [配置文件（*.conf）]
-Redis有60多种配置，基础配置有：
-port:端口
-logfile：日志文件
-dir：Redis工作目录
-daemonize：是否以守护进程的方式启动Redis
+`redis-server [配置文件（*.conf）]`
 
-# 命令
+Redis有60多种配置，基础配置有：
+
+- `port`:端口
+- `logfile`：日志文件
+- `dir`：Redis工作目录
+- `daemonize`：是否以守护进程的方式启动Redis
+
+**2. Redis命令行客户端**
+
+可以使用两种方式连接Redis服务器：
+
+- **交互式方式**，通过`redis-cli -h {host} -p {port}`方式连接到Redis服务。
+- **命令方式**，通过`redis-cli -h {host} -p {port} {command}`
+
+**3. 停止Redis服务**
+
+
+```
+redis-cli shutdown [nosave|save]
+```
+
+> nosave/save代表是否在关闭Redis前，生成持久化文件。
+
+还可以通过在操作系统停止进程的方式关闭掉Redis。
+
+# 第2章 API的使用和理解
+
+## 2.1 预备知识
+
+### 2.1.1 全局命令
+
+**1. 查看所有键**
+
+
+```
+keys *
+```
+
+**2. 键总数**
+
+```
+dbsize
+```
+
+**3. 检查键是否存在**
+
+```
+exists key
+```
+
+**4. 删除键**
+
+```
+del key [key ...]
+```
+
+**5. 键过期**
+
+```
+expire key seconds
+```
+
+`ttl`命令会返回键的剩余过期时间，它有3种返回值：
+
+- 大于等于0的整数：键剩余的过期时间
+- -1：键没设置过期时间
+- -2：键不存在
+
+**6. 键的数据结构类型**
+
+```
+type key
+```
+
+### 2.2.1 数据结构和内部编码
+
+每种数据结构都有自己底层的内部编码实现，而且是多种实现，这样Redis会在合适的场景选择合适的内部编码。如图所示：
+
+```mermaid
+	graph LR
+	A(key) --> B(string)
+	A --> C(hash)
+	A --> D(list)
+	A --> E(set)
+	A --> F(zset)
+	B --> G(raw)
+	B --> H(int)
+	B --> I(embstr)
+	C --> J(hashtable)
+	C --> K(ziplist)
+	D --> L(linkedlist)
+	D --> M(ziplist)
+	E --> N(hashtable)
+	E --> O(intset)
+	F --> P(skiplist)
+	F --> Q(ziplist)
+```
+
+可以通过`object encoding`命令查询内部编码：
+
+```
+object encoding key
+```
+
+Redis这样设计的好处：
+
+- **可以改进内部编码**，而对外的数据结构和命令没有影响。如Redis 3.2的quicklist，结合了ziplist和linkedlist两者的优势。
+- **多种内部编码实现可以在不同场景下发挥各自的优势**。如ziplist比较节省内存，但在列表元素较多时性能会有所下降，这时Redis会根据配置选项将列表类型的内部实现转换为linkedlist。
+
+### 2.1.3 单线程架构
+
+Redis使用了单线程架构和I/O多路复用模型来实现高性能的内存数据库服务。
+
+**1. 单线程模型**
+
+Redis的命令从客户端到达服务端不会立刻被执行，所有命令都会进入一个队列种，然后逐个被执行。对于同时发送到Redis的命令的执行顺序是不确定的，但可以确定不会有两条命令被同时执行。
+
+**2. 为什么单线程还能这么快**
+
+- **纯内存访问**。Redis将所有数据放在内存中。
+- **非阻塞I/O**。Redis使用epoll作为I/O多路复用的实现，再加上Redis自身的事件处理模型将epoll的连接、读写、关闭都转换为事件，不在网络I/O上浪费过多的时间。如图所示：
+
+![image](https://note.youdao.com/favicon.ico)
+
+
+
+
+
 
 - redis-cli -v //查看Redis版本
 
