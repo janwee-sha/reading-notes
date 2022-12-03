@@ -1,4 +1,4 @@
-> The following contents are a reference of [High Performance MySQL, 3rd Edition](https://learning.oreilly.com/library/view/high-performance-mysql/9781449332471/)
+> The following content is a reference of [High Performance MySQL, 3rd Edition](https://learning.oreilly.com/library/view/high-performance-mysql/9781449332471/)
 
 # Chapter 4. Optimizing Schema and Data Types
 
