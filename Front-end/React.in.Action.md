@@ -52,7 +52,7 @@ React组件具有良好的封装性、复用性和组合性。
 
 The following figure gives you an overview of the core aspects of most React applications.
 
-![image](https://note.youdao.com/favicon.ico)
+![image](https://github.com/janwee-sha/reading-notes/blob/main/Front-end/React.in.Action.Graph.2-1.png)
 
 - **Components**. Encapsulated units of functionality that are the primary unit in React. They utilize data (properties and state) to render your UI as output. Certain types of React components also provide a set of lifecycle methods that you can hook into. The rendering process (outputting and updating a UI based on your data) is predictable in React, and your components can hook into it using React's APIs.
 - **React libraries**. React uses a set of core libraries. The core React libraryworks with the *react-dom* and *react-native* libraries and is focused on component specification and definition. It allows you to build a tree of components that a renderer for the browser or another platform can use. *react-dom* is one such renderer and is aimed at browser environments and server-side rendering. The React Native libraries focus on native platforms and let you create React applications for iOS, Android, and other platforms.
