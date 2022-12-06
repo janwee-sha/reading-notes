@@ -61,11 +61,15 @@ The following figure gives you an overview of the core aspects of most React app
 
 ## 2.1 INTRODUCING REACT COMPONENTS
 
-### 2.2.1 多组合：组合关系和父子关系
+### 2.2.1 Multiple components: COmposition and parent-child relationships
 
 React的组件被组织成一个树形结构。React的组件像DOM元素一样，也可以嵌套而且能够包含其他组件。它们也可以与其他组件出现在相同的层级上。
 
-## 2.2 用React创建组件
+## 2.2 Creating components in React
+
+### 2.2.1 Creating React elements
+
+> Definition： React元素是React中轻量的、无状态的、不可变的基础类型。React元素有ReactComponentElement和ReactDOMElement两种类型。ReactDOMElement是DOM元素的虚拟表示。ReactComponentElement引用了对应着React组件的一个函数或类。
 
 React.createElement被用来创建React元素，它的函数签名如下：
 
@@ -83,6 +87,106 @@ React.createElement(
 - `props` —— props对象提供了一种方法，指定HTML元素上会定义哪些属性（如果是在ReactDOMElement的上下文中）或组件类的实例可以使用哪些属性。
 - `children` —— 使用children组合其他React组件。
 
+### 2.2.3 Creating React components
 
+两种基本类型的组件：
 
+- 无状态函数组件。
+- 使用JavaScript类创建的有状态的React组件。
+
+### 2.2.4 Creating React classes
+
+React中的组件是帮助将React元素和函数组织到一起的类。它们可以创建为扩展自React.Component基类的类或是函数。
+
+创建React的类的方式：
+
+```
+class MyReactClassComponent extends Component {
+    render() {}
+}
+```
+
+创建React类的老办法是使用createClass方法。这种方式随着JavaScript的类的到来而发生了改变。
+
+### 2.2.5 The render method
+
+几乎任何向屏幕显示内容的组件都带有render方法。
+
+render方法只返回一个React元素。这与React元素的创建方法相似——它们可以嵌套但最高层只有一个节点。
+
+React为使用JavaScript类创建的有状态的React组件创建了一个“支撑实例”。
+
+React会为React类的实例创建并追踪一个特殊的数据对象，这个对象随时间保持存在并可以通过特定的React函数进行更新。
+
+![image](https://github.com/janwee-sha/reading-notes/blob/main/Front-end/React.in.Action.Graph.2-10.png)
+
+支撑实例是一种为特定组件提供数据存储和访问的方法。存储在该实例中的数据会通过特定的API方法被提供给组件的render方法。
+
+### 2.2.6 Property validation via PropTypes
+
+React类组件可以自由使用自定义属性。
+
+可以使用来自React命名空间PropTypes的验证器验证所使用的属性一遍能够防止并规划组件使用的数据种类。
+
+这组PropTypes验证器过去包含在React核心库中，但之后在React 15.5版本中被分离出去并被废弃了。要使用PropTypes，需要安装prop-types软件包。
+
+prop-types库提供了一组校验器，它们可以指定组件需要或期望什么样的属性。
+
+使用PropTypes时，需要通过类的静态属性或通过类定义后的简单属性赋值来把propTypes属性添加到React.Component类。
+
+## 2.3 The life and times of a component
+
+放大React的渲染过程。React使用React类和React元素创建内存中控制实际DOM的虚拟DOM。它还创建了一个“综合”事件系统，以便仍可以对来自浏览器的事件做出反应。
+
+![image](https://github.com/janwee-sha/reading-notes/blob/main/Front-end/React.in.Action.Graph.2-11.png)
+
+除了保留的生命周期方法，使用者可以对React类添加自己的方法。
+
+### 2.3.1 A React state of mind
+
+与自定义方法和生命周期方法一起，React类还提供了能够与组件一起持久化的状态（数据）。
+
+React中，那些通过扩展`React.Component`并作为JavaScript类创建的组件可能既有**可变状态**也有**不可变状态**，基于函数创建的组件（无状态函数组件）则只能访问**不可变状态**。
+
+在扩展自`React.Component`的组件中，可以通过类实例的`this.state`属性访问可变状态，而不可变状态则是通过`this.props`进行访问的。
+
+### 2.3.2 Setting initial state
+
+可以使用组件的构造函数来为组件设置初始状态。
+
+```
+class YourComponent extends {
+    constructor(props) {
+        this.state = {...}
+    }
+}
+```
+
+需要使用一个专门的方法来更新组件类的构造函数中初始化的状态。可以使用`this.setState`来更新React类组件中的状态。
+
+`this.setState`接收一个用来更新状态的更新器函数，而且它不返回任何东西：
+
+```
+setState(
+    function(prevState, props) -> nextState,
+    callback
+) -> void
+```
+
+React实现了一个合成事件系统作为虚拟DOM的一部分，它会将浏览器中的事件转换为React应用中的事件。
+
+用法如下：
+
+```
+class YourComponent extends {
+    constructor(props) {
+        this.handleUserChange = this.handleUserChange.bind(this);//由于使用类创建的组件我无法自动绑定组件的
+        //方法，因此需要在构造函数中将它们绑定到this上
+    }
+    
+    handleUserChange(event) {//指定事件处理器来响应事件
+        ...
+    }
+}
+```
 
