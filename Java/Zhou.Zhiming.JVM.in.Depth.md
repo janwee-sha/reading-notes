@@ -121,7 +121,7 @@ JDK 1.4中加入的NIO（New Input/Output）类，引入了一种基于通道（
 
 Java堆用于存储对象实例，只要不断地创建对象，且保证GC Roots到对象之间有可达路径来避免垃圾回收机制清除这些对象，那么随着对象数量的增加，总容量触及最大堆的容量限制后就会产生内存溢出异常。
 
-[这里](https://note.youdao.com/)的代码限制Java堆的大小为20MB，不可扩展（将堆的最小值 `-Xms` 参数与最大值 `-Xmx` 参数设置为一样即可避免堆自动扩展），参数 `-XX:+HeapDumpOnOutOfMemoryError` 可以让虚拟机在出现内存溢出异常时Dump出当前的内存堆转储快照以便进行事后分析。
+[这里](https://github.com/janwee-sha/reading-notes/blob/main/Java/codes/JVM.in.Depth/chapter2/HeapOOM.java)的代码限制Java堆的大小为20MB，不可扩展（将堆的最小值 `-Xms` 参数与最大值 `-Xmx` 参数设置为一样即可避免堆自动扩展），参数 `-XX:+HeapDumpOnOutOfMemoryError` 可以让虚拟机在出现内存溢出异常时Dump出当前的内存堆转储快照以便进行事后分析。
 
 若是内存泄漏，可进一步通过工具查看泄漏对象到GC Roots的引用链，找到泄漏对象是通过怎样的引用路径、与那些GC Roots相关联，才导致垃圾收集器无法回收它们。
 
@@ -133,7 +133,47 @@ Java堆用于存储对象实例，只要不断地创建对象，且保证GC Root
 
 《Java虚拟机规范》明确允许Java虚拟机实现自行选择是否支持栈的动态扩展，而HotSpot虚拟机的选择是不支持扩展。除非在创建线程申请内存时就因无法获得足够内存而出现 `OutOfMemoryError` 异常，否则在线程运行时是不会因扩展而导致内存溢出的，只会因为栈容量无法容纳新的栈帧而导致 `StackOverflowError` 异常。
 
-<To be continued>
+下面将实验范围限制在单线程内操作，尝试下面两个行为是否能让HotSpot虚拟机产生 `OutOfMemoryError` 异常：
+
+- 使用 `-Xss` 参数减少栈内存容量。点击[这里](https://github.com/janwee-sha/reading-notes/blob/main/Java/codes/JVM.in.Depth/chapter2/JavaVMStackSOF.java)查看代码。
+
+- 定义大量的本地变量，增大此方法帧中本地变量表的长度。点击[这里](https://github.com/janwee-sha/reading-notes/blob/main/Java/codes/JVM.in.Depth/chapter2/JavaVMStackSOF2.java)查看代码。
+
+在HotSpot虚拟机下，两个实验都抛出 `StackOverflowError` 异常。可是如果在允许动态扩展栈容量大小的虚拟机上，相同代码会导致不一样的情况。
+
+### 2.4.3 方法区和运行时常量池溢出
+
+**运行时常量池**
+
+HotSpot从JDK 7开始逐步“去永久代”的计划，并在JDK 8中完全使用元空间来代替永久代。
+
+在JDK 6或更早之前的HotSpot虚拟机中，常量池都是分配在永久代中，我们可以通过 `-XX:PermSize` 和 `-XX:MaxPermSize` 限制永久代的大小，即可间接限制其中容量池的容量，具体实现如[此处](https://github.com/janwee-sha/reading-notes/blob/main/Java/codes/JVM.in.Depth/chapter2/RuntimeConstantPoolOOM.java)的代码所示。
+
+在JDK 6中运行上述代码会抛出 `OutOfMemoryError` 异常且紧跟着的提示信息是“PermGen space”，说明运行时常量池的确是属于方法区（即JDK 6的HotSpot虚拟机中的永久代）的一部分。
+
+而使用JDK 7或更高版本的JDK来运行这段程序并不会得到相同的结果，无论是在JDK 7中继续使用 `-XX:MaxPermSize` 参数或者在JDK 8及以上版本使用 `-XX:MaxMetaspaceSize` 参数把方法区容量同样限制在6MB，也都不会重现JDK 6中的溢出异常，循环将会一直进行下去，永不停歇。这是因为自JDK 7起，原本存放在永久代的字符串常量被移至Java堆中。因此在JDK 7及以上版本，限制方法区的容量对改测试用例来说毫无意义。这时候使用 `-Xmx` 参数限制最大堆到6MB就能够抛出 `OutOfMemoryError` 异常。
+
+**方法区**
+
+对于方法区溢出的测试，基本的思路是运行时产生大量的类去填满方法区，直到溢出为止。虽然直接使用Java SE API也可以动态产生类（如反射时的GeneratedConstructorAccessor和动态代理等），但在本次实验中操作起来比较麻烦。
+
+[此处](https://github.com/janwee-sha/reading-notes/blob/main/Java/codes/JVM.in.Depth/chapter2/JavaMethodAreaOOM.java) 的代码借助了CGLib直接操作字节码运行时生成了大量的动态类。
+
+方法区溢出也是一种常见的内存溢出异常，一个类若要被垃圾收集器回收，要达成的条件是比较苛刻的。在经常运行时生成大量动态类的应用场景里，就应该特别关注这些类的回收状况。
+
+在JDK 8以后，永久代便被元空间代替。默认设置下，前述那些正常的动态创建新类型的测试用例已经很难再使虚拟机产生方法区的溢出异常了。但HotSpot还是提供了一些元空间相关的JVM参数：
+
+- `-XX: MaxMetaspaceSize`：设置元空间最大值，默认是 `-1`，即不限制。
+- `-XX: MetaspaceSize`：指定元空间的初始空间大小，以字节为单位，达到该值就会触发垃圾收集进行类型卸载，同时收集器会对该值进行调整：若释放了大量的空间，就适当降低该值；若释放了很少的空间，那么在不超过 `-XX: MaxMetaspaceSize` 的情况下，适当提高该值。
+- `-XX: MinMetaspaceFreeRatio`：在垃圾收集之后控制最小的元空间剩余容量的百分比，可减少因为元空间不足导致的垃圾收集的频率。
+
+### 2.4.4 本机直接内存溢出
+
+Direct Memory的容量大小可通过 `-XX:MaxDirectMemorySize` 参数来指定，若不去指定，则默认与Java堆最大值一致。
+
+[此处](https://github.com/janwee-sha/reading-notes/blob/main/Java/codes/JVM.in.Depth/chapter2/DirectMemoryOOM.java) 的代码越过了 `DirectByteBuffer` 类通过反射获取 `Unsafe` 实例进行内存分配，因为虽然使用 `DirectByteBuffer` 分配内存也会抛出内存溢出异常，但它抛出异常时并没有真正向操作系统申请分配内存，而是通过计算得知内存无法分配就会在代码里手动排除溢出异常，真正申请分配内存的方法是 `Unsafe:: allocateMemory()`。
+
+由直接内存导致的内存溢出，一个明显的特征是在Heap Dump文件中不会看见有什么明显的异常情况，若发现内存溢出之后产生的Dump文件很小，而程序又直接或间接地适用了DirectMemory，那就可以考虑重点检查一下直接内存方面的原因了。
 
 # 3. 垃圾收集器与内存分配策略
 
