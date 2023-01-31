@@ -17,7 +17,7 @@
 
 #### 7.1.1 Catching Exceptions
 
-Java程序中的异常对象都是派生于Throwable类的一个实例。
+Java程序中的异常对象都是派生于 `Throwable` 类的一个实例。
 
 Java异常层次结构的一个简化示意图：
 
@@ -44,11 +44,11 @@ Java语言规范将派生于Error类或RUntimeException类的所有异常称为�
 
 #### 7.2.4 The *finally* Clause
 
-不管是否有异常被捕获，finally子句都被执行。
+不管是否有异常被捕获，`finally` 子句都被执行。
 
-try语句可以只有finally子句，而没有catch子句。
+try语句可以只有 `finally` 子句，而没有 `catch`子句。
 
-解耦try/catch和try/finally语句块的写法：
+解耦 `try/catch` 和 `try/finally` 语句块的写法：
 
 ```
 try {
@@ -93,9 +93,9 @@ try {
 
 “for each”循环可以与任何实现了Iterable接口的对象一起工作，这个接口只包含`Iterator<E> iterator();`一个抽象方法。
 
-在Java SE 8中，甚至不用写循环。可以调用forEachRemaining方法。
+在Java SE 8中，甚至不用写循环。可以调用 `forEachRemaining` 方法。
 
-Iterator接口的remove方法将会删除上次调用next方法时返回的元素。若想要删除指定位置上的元素，仍然需要越过这个元素。如，删除集合中第一个元素的方法：
+Iterator接口的 `remove` 方法将会删除上次调用 `next` 方法时返回的元素。若想要删除指定位置上的元素，仍然需要越过这个元素。如，删除集合中第一个元素的方法：
 
 ```
 Iterator<Integer> it = nums.iterator();
@@ -103,7 +103,7 @@ it.next();//skip over the first element
 it.remove;//now remove it
 ```
 
-对next方法和remove方法的调用具有互相依赖性。若调用remove前没有调用next将是不合法的。这样做会抛出一个IllegalStateException异常。
+对 `next` 方法和 `remove` 方法的调用具有互相依赖性。若调用 `remove` 前没有调用 `next` 将是不合法的。这样做会抛出一个 `IllegalStateException` 异常。
 
 #### 9.1.5 Interfaces in the Collections Framework
 
@@ -122,9 +122,9 @@ it.remove;//now remove it
 	N(RandomAccess)
 ```
 
-集合有两个基本接口：Collection和Map。
+集合有两个基本接口：`Collection` 和 `Map`。
 
-List是一个有序集合（ordered collection）。元素会增加到容器中的特定位置。可以采用两种方式访问元素：使用迭代器访问，或者使用一个整数索引来访问。后者称为任意访问（random access），因为这样可以按任意顺序访问元素。前者须顺序访问。
+`List` 是一个有序集合（ordered collection）。元素会增加到容器中的特定位置。可以采用两种方式访问元素：使用迭代器访问，或者使用一个整数索引来访问。后者称为任意访问（random access），因为这样可以按任意顺序访问元素。前者须顺序访问。
 
 List接口定义了很多用于随机访问的方法：
 
@@ -241,7 +241,7 @@ Adding a element to a tree is slower than adding it to a hash table. But it is s
 | \* E ceiling (E value)<br>\* E floor (E value)<br>returns the least *element* >= *value* or the largest *element* <= *value*, or null if there is no such element. |
 | \* Iterator<E> descendingIterator()<br>return an iterator that traverses this set in descending direction|
 
-[Here](https://github.com/janwee-sha/java-in-practice/blob/main/src/main/java/container/test/TreeSetTest.java) are some codes that test a tree set.
+[Here](https://github.com/janwee-sha/java-in-practice/blob/main/src/main/java/collection/test/TreeSetTest.java) are some codes that test a tree set.
 
 ## 14 Concurrency
 
@@ -557,6 +557,51 @@ interface Future<V> {
 FutureTask包装器是一种非常便利的机制，可将Callable转换成Future和Runnable，它同时实现二者的接口。
 
 # Volume II
+
+## Chapter 1. Streams
+
+Streams provide a view of data that lets you specify computations at a higher conceptual level than with collections. With a stream, yoou specify what you want to have done, not how to do it. You leave the schduling of operations to the implementation.
+
+### 1.1 From Iterating to Stream Operations
+
+> #### java.util.stream.Stream 8
+>
+> - **static <T> Stream<T> of(T... values)**
+> yields a stream whose elements are the given values.
+>
+> - **static <T> Stream<T> empty()**
+> yields a stream with no elements.
+>
+> - **static <T> Stream<T> generate(Supplier<T> s)**
+> yields an infinite stream whose elements are constructured by repeatedly invoking the function a.
+>
+> - **static <T> Stream<T> iterate(T seed, UnaryOperator<T> f)**
+> - **static <T> Stream<T> iterate(T seed, Predicate<? super T> hasNect, UnaryOperator<T> f)**
+> yields a stream whose elements are `seed`, `f` invoked on the proceding element, and so on. The first method yields an infinite stream. The stream of the second method comes to an end before the first element that doesn't fulfill the `hasNext` predicate.
+
+> #### java.util.Spliterators 8
+> - static <T> Spliterator<T> spliteratorUnknownSize(Iterator<? extends T> iterator, int characteristics)
+> turn an iterator into a splittable iterator of unknown size with the give characteristics (a bit pattern containing contants such as `Spliterator.ORDERED`).
+
+> #### java.util.Arrays 1.2
+> - static <T> Stream<T> stream(T[], int startInclusive, int endExclusive)
+yields a stream whose elements are the specified range of the array.
+
+> #### java.util.regex.Pattern 1.4
+> - Stream<String> splitAsStream(CharSequence input) 8
+> yields a stream whose elements are the parts of the input that are delimited by this pattern.
+
+> #### java.nio.file.Files 7
+> - static Stream<String> lines(Path path) 8
+> - static Stream<String> lines(Path path, Charset cs)8
+> yields a stream whose elements are the lines of the specified file, with the UTF-8 charset or the given charset.
+
+
+
+
+
+
+
 
 ## Chapter 2. Input and Output
 
