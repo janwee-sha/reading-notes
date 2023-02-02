@@ -8,7 +8,7 @@
 - 大多数MySQL的核心功能存在于第二层，包括查询解析、分析、优化、以及所有的内置函数，所有跨存储引擎的功能也都在这一层实现：存储过程、触发器、视图等。
 - 第三层是存储引擎层。存储引擎负责MySQL中数据的存储和提取。
 
-![image](https://github.com/janwee-sha/reading-notes/blob/main/SQL/High.Performance.MySQL.Graph.1-1.png)
+![image](https://github.com/janwee-sha/reading-notes/blob/main/SQL/images/High.Performance.MySQL.Graph.1-1.png)
 
 ## Concurrency Control
 
@@ -30,7 +30,7 @@ two types of lock:
 
 #### Table lock
 
-表锁是MySL中最基本的也是开销最小的锁策略。
+表锁是MySQL中最基本的也是开销最小的锁策略。
 
 表锁有一些变体，可以在某些特定情况下支持某些类型的并发写操作。写锁队列和读锁队列是分开的，但写锁队列的优先级绝对高于读队列。
 
@@ -71,15 +71,29 @@ two types of lock:
 
 ### Multiversion Concurrency Control
 
-MySQL中的大多数事务型存储引擎使用的都不是简单的行级锁机制。它们会将行级锁和可以提高并发性的多版本并发控制技术结合使用。
+MySQL中的大多数事务型存储引擎使用的都不是简单的行级锁机制。
 
-MVCC可以被认为是行级锁的一个变种，但是它在很多情况下避免了加锁操作，因此开销更低。
+MVCC可以被认为是行级锁的一个变种，但是它在很多情况下避免了加锁操作。它们会将行级锁和可以提高并发性的多版本并发控制技术结合使用，因此开销很低。根据其实现方式，不仅实现了非阻塞的读操作，写操作也只锁定必要的行。
 
-MVCC的工作原理是使用数据在某个时间点的快照实现的。
+MVCC的工作原理是使用数据在某个时间点的快照实现的。这意味着无论事务运行多长时间，都可以看到数据的一致性视图，也意味着不同的事务可以在同一时间看到同一张表的不同数据。
 
 每个存储引擎实现MVCC的方式都不同。其中一些变体包括乐观并发控制和悲观并发控制。
 
-MVCC仅适用于REPEATABLE READ和READ COMMITTED隔离级别。
+下图所示的序列图解释了InnoDB对MVCC的实现方式的行为：
+
+![image](https://github.com/janwee-sha/reading-notes/blob/main/SQL/images/High.Performance.MySQL.Graph.1-2.png)
+
+InnoDB通过为每个事务在启动时分配一个事务ID来实现MVCC。该ID在事务首次读取任何数据时分配。在该事务中修改记录时，将向Undo日志写入一条说明如何恢复该更改的Undo记录，且事务的回滚指针指向该Undo日志记录。
+
+当不同的会话读取聚簇主键索引记录时，InnoDB 会将该记录的事务 ID 与该会话的读取视图进行比较。如果当前状态下的记录不应可见（更改它的事务尚未提交），则 Undo 日志记录将被跟踪并应用，直到会话达到一个符合可见条件的事务ID。该过程可以一直循环到完全删除这一行的 Undo 记录，然后向读取视图发出这一行不存在的信号。
+
+事务中的记录可以通过在记录的“info flags”中设置“deleted”位来删除。
+
+所有Undo日志写入也都会写入Redo日志，因为Undo日志写入时服务器是服务器崩溃恢复过程的一部分，并且是事务性的。
+
+在记录中保留这些额外信息带来的结果是，大多数读取查询都不再需要获取锁。缺点是存储引擎必须在每一行中存储更多的数据，在检查行时需要做更多的工作，并处理一些额外的内部操作。
+
+MVCC仅适用于 *REPEATABLE READ* 和 *READ COMMITTED* 隔离级别。*READ UNCOMMITTED* 与MVCC不兼容，是因为查询不会读取适合其事务版本的行版本，而是不管怎样都读最新版本。*SERIALIZABLE* 与MVCC也不兼容，是因为读取会锁定它们返回的每一行。
 
 ### Replication
 
@@ -91,7 +105,7 @@ MySQL被设计用于在任何给定时间只在一个节点上接受写操作。
 
 
 
-# Chapter 6. Schema Design and Magement
+# Chapter 6. Schema Design and Management
 
 ## Choosing Optimal Data Types
 
@@ -218,13 +232,13 @@ MySQL的存储引擎API通过在服务器和存储引擎之间以行缓冲区格
 
 The *B-Tree* index of MySQL typically uses a B-Tree data structure to store its data.
 
-> Many storae engines actually use a B+Tree index, in which each leaf node contains a link to the next for fast range traversals through nodes.
+> Many storage engines actually use a B+Tree index, in which each leaf node contains a link to the next for fast range traversals through nodes.
 
 MySQL在CREATE TABLE和其他语句中使用的是"BTREE"关键字，但存储引擎也可能使用不同的存储结构，如，NDB集群存储引擎内部实际上使用了T-Tree结构存储这种索引；InnoDB则使用的是B+Tree。
 
 The general idea of a B-Tree is that all the values are stored in order and each leaf page is the same distance from the root.
 
-![image](https://github.com/janwee-sha/reading-notes/blob/main/SQL/High.Performance.MySQL.Graph.5-1.png)
+![image](https://github.com/janwee-sha/reading-notes/blob/main/SQL/images/High.Performance.MySQL.Graph.5-1.png)
 
 叶子节点比较特别，它们的指针指向的是被索引的数据，而不是其他的节点页。
 
@@ -732,7 +746,7 @@ MySQL能够处理的优化器类型：
 
 在MySQL 5.6之前，副本必须跟踪连接到源时读取的二进制日志文件和日志位置。当副本从该二进制日志中读取事件时，它每次都会向后推进日志位点。如果此时发生故障，如源服务器崩溃了，必须从备份中重建数据。那么问题来了：在源端，若二进制日志位点重新开始，怎么能重新将副本连接到源库？若指向的位点太早，则副本就会获得重复的事件；若指向的位点太晚，则会漏掉事件。
 
-为了解决这个问题，MySQL新增了另一种跟踪复制位点的方法：全局事务标识符（GTID）。
+为了解决这个问题，MySQL新增了另一种跟踪复制位点的方法：全局事务标识符（GTID）。使用GTID，源服务器提交的每个事务都会被分配一个唯一标识符。此标识符是由server\_uuid和一个递增的事务编号组成的。当事务被写入二进制日志时，GTID也随之被写入。当副本SQL线程提交事务时，它也会将GTID标记为执行完成。
 
 # Appendix 1. Full-Text Indexes
 
