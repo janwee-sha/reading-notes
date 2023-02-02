@@ -81,7 +81,7 @@ MVCC的工作原理是使用数据在某个时间点的快照实现的。这意�
 
 下图所示的序列图解释了InnoDB对MVCC的实现方式的行为：
 
-![image](https://github.com/janwee-sha/reading-notes/blob/main/SQL/images/High.Performance.MySQL.Graph.1-2.png)
+![image](https://github.com/janwee-sha/reading-notes/blob/main/SQL/images/High.Performance.MySQL.Graph.1-2.jpg)
 
 InnoDB通过为每个事务在启动时分配一个事务ID来实现MVCC。该ID在事务首次读取任何数据时分配。在该事务中修改记录时，将向Undo日志写入一条说明如何恢复该更改的Undo记录，且事务的回滚指针指向该Undo日志记录。
 
