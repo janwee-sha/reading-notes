@@ -18,7 +18,7 @@ React的虚拟DOM是模仿或镜像存在于浏览器中的文档对象模型的
 
 图1.3展示了DOM和虚拟DOM之间的关系。
 
-![image](https://github.com/janwee-sha/reading-notes/blob/main/Front-end/React.in.Action.Graph.1-3.png)
+![image](https://github.com/janwee-sha/reading-notes/blob/main/Front-end/images/React.in.Action.Graph.1-3.png)
 
 ### 1.3.1 The DOM
 
@@ -30,7 +30,7 @@ DOM提供过了访问、存储和操纵文档不同部分的结构化方式。�
 
 与DOM交互通常很简单，但在大型Web应用中可能会变得复杂。幸运的是，当使用React构建应用时我们通常不需要直接与DOM交互——我们基本上把它都交给了React。
 
-![image](https://github.com/janwee-sha/reading-notes/blob/main/Front-end/React.in.Action.Graph.1-4.png)
+![image](https://github.com/janwee-sha/reading-notes/blob/main/Front-end/images/React.in.Action.Graph.1-4.png)
 
 ### 1.3.2 The virtual DOM
 
@@ -40,7 +40,7 @@ DOM提供过了访问、存储和操纵文档不同部分的结构化方式。�
 
 ### 1.4.1 Components in general
 
-![image](https://github.com/janwee-sha/reading-notes/blob/main/Front-end/React.in.Action.Graph.1-6.png)
+![image](https://github.com/janwee-sha/reading-notes/blob/main/Front-end/images/React.in.Action.Graph.1-6.png)
 
 图1-6 一个界面被拆解为组件的例子。
 
@@ -52,7 +52,7 @@ React组件具有良好的封装性、复用性和组合性。
 
 The following figure gives you an overview of the core aspects of most React applications.
 
-![image](https://github.com/janwee-sha/reading-notes/blob/main/Front-end/React.in.Action.Graph.2-1.png)
+![image](https://github.com/janwee-sha/reading-notes/blob/main/Front-end/images/React.in.Action.Graph.2-1.png)
 
 - **Components**. Encapsulated units of functionality that are the primary unit in React. They utilize data (properties and state) to render your UI as output. Certain types of React components also provide a set of lifecycle methods that you can hook into. The rendering process (outputting and updating a UI based on your data) is predictable in React, and your components can hook into it using React's APIs.
 - **React libraries**. React uses a set of core libraries. The core React libraryworks with the *react-dom* and *react-native* libraries and is focused on component specification and definition. It allows you to build a tree of components that a renderer for the browser or another platform can use. *react-dom* is one such renderer and is aimed at browser environments and server-side rendering. The React Native libraries focus on native platforms and let you create React applications for iOS, Android, and other platforms.
@@ -61,7 +61,7 @@ The following figure gives you an overview of the core aspects of most React app
 
 ## 2.1 INTRODUCING REACT COMPONENTS
 
-### 2.2.1 Multiple components: COmposition and parent-child relationships
+### 2.2.1 Multiple components: Composition and parent-child relationships
 
 React的组件被组织成一个树形结构。React的组件像DOM元素一样，也可以嵌套而且能够包含其他组件。它们也可以与其他组件出现在相同的层级上。
 
@@ -118,7 +118,7 @@ React为使用JavaScript类创建的有状态的React组件创建了一个“支
 
 React会为React类的实例创建并追踪一个特殊的数据对象，这个对象随时间保持存在并可以通过特定的React函数进行更新。
 
-![image](https://github.com/janwee-sha/reading-notes/blob/main/Front-end/React.in.Action.Graph.2-10.png)
+![image](https://github.com/janwee-sha/reading-notes/blob/main/Front-end/images/React.in.Action.Graph.2-10.png)
 
 支撑实例是一种为特定组件提供数据存储和访问的方法。存储在该实例中的数据会通过特定的API方法被提供给组件的render方法。
 
@@ -138,7 +138,7 @@ prop-types库提供了一组校验器，它们可以指定组件需要或期望�
 
 放大React的渲染过程。React使用React类和React元素创建内存中控制实际DOM的虚拟DOM。它还创建了一个“综合”事件系统，以便仍可以对来自浏览器的事件做出反应。
 
-![image](https://github.com/janwee-sha/reading-notes/blob/main/Front-end/React.in.Action.Graph.2-11.png)
+![image](https://github.com/janwee-sha/reading-notes/blob/main/Front-end/images/React.in.Action.Graph.2-11.png)
 
 除了保留的生命周期方法，使用者可以对React类添加自己的方法。
 

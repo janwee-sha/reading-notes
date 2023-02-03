@@ -28,7 +28,7 @@
 - 主节点，它承载着Kubernetes控制和管理整个集群系统的控制面板。
 - 工作节点，它们运行用户实际部署的应用。
 
-![image](https://github.com/janwee-sha/reading-notes/blob/main/SystemDesign/Kubernetes.in.Action.Figure.1.9.png)
+![image](https://github.com/janwee-sha/reading-notes/blob/main/SystemDesign/images/Kubernetes.in.Action.Figure.1.9.png)
 
 **控制面板**
 
@@ -138,7 +138,7 @@ docker build -t kubia .
 
 镜像构建的过程如下图所示：
 
-![image](https://github.com/janwee-sha/reading-notes/blob/main/SystemDesign/Kubernetes.in.Action.Figure.2.2.png)
+![image](https://github.com/janwee-sha/reading-notes/blob/main/SystemDesign/images/Kubernetes.in.Action.Figure.2.2.png)
 
 **镜像是如何构建的**
 
@@ -314,7 +314,7 @@ Kubernets并不直接处理单个容器，相反，它使用多个共存容器�
 
 **图：容器、pod及物理工作节点之间的关系**
 
-![image](https://github.com/janwee-sha/reading-notes/blob/main/SystemDesign/Kubernetes.in.Action.Figure.2.5.png)
+![image](https://github.com/janwee-sha/reading-notes/blob/main/SystemDesign/images/Kubernetes.in.Action.Figure.2.5.png)
 
 #### 列出pod
 
@@ -338,9 +338,9 @@ $ kubectl get pods
 
 **图 在Kubernetes中运行luksa/kubia容器**
 
-![image](https://github.com/janwee-sha/reading-notes/blob/main/SystemDesign/Kubernetes.in.Action.Figure.2.6.png)
+![image](https://github.com/janwee-sha/reading-notes/blob/main/SystemDesign/images/Kubernetes.in.Action.Figure.2.6.png)
 
-### 2.3.2 访问Web应用
+### 2.3.2 Accessing your web application
 
 每个pod都有自己的IP地址，但是这个地址是集群内部的，不能从集群外部访问。要让pod能够从外部访问，需要通过服务对象公开它，要创建一个特殊的**LoadBalancer**类型的服务。因为如果你创建一个常规服务（一个ClusterIP服务），比如pod，它也只能从集群内部访问。通过创建LoadBalancer类型的服务，将创建一个外部的负载均衡，可以通过负载均衡的公共IP访问pod。
 
@@ -375,7 +375,7 @@ kubia-http   LoadBalancer   10.105.159.126   <pending>     7400:32513/TCP   2m42
 
 应用会将pod名称作为它的主机名。
 
-### 2.3.3 系统的逻辑部分
+### 2.3.3 The logical part of your system
 
 **ReplicationController、pod和服务是如何组合在一起的**
 
@@ -391,7 +391,7 @@ pod的存在是短暂的，一个pod可能在任何时候消失，或许因为�
 
 当一个服务被创建时，它会得到一个静态的IP，在服务的生命周期中这个IP不会发生改变。客户端应该通过固定IP地址连接到服务，而不是直接连接pod。服务会确保其中一个pod接收连接，而不关心pod当前运行在哪里。
 
-### 2.3.4 水平伸缩应用
+### 2.3.4 Horizontally scaling the application
 
 使用Kubernetes的一个主要好处是可以简单地扩展部署。
 
@@ -414,3 +414,69 @@ kubectl scale rc kubia --replicas=<number>
 使用Kubernetes给应用扩容变得非常简单。一旦应用在生产中运行并且需要扩容，可以使用一个命令添加额外的实例，而不必手动安装和运行其他副本。
 
 应用本身需要支持水平伸缩。Kubernetes并不会让你的应用变得可扩展，它只是让应用的扩容和缩容变得简单。
+
+### 2.3.5 Examining what nodes your app is running on
+
+列出pod的IP、节点等附加信息：
+
+```
+kubectl get pods -o wide
+```
+
+### 2.3.6 Kubernetes dashboard
+
+使用GKE时，可以通过 `kubernetes cluster-info` 命令找到dashboard的URL：
+
+```
+kubectl cluster-info | grep dashboard
+```
+
+使用Minikube的Kubernetes集群的dashboard可以运行以下命令打开：
+
+```
+minikube dashboard
+```
+
+# 3 Pods: running containers in Kubernetes
+
+## 3.1 Pods
+
+### 3.1.1 Why we need pods
+
+**为何多个容器比单个容器中包含多个进程要好**
+
+一个由多个进程组成的应用程序，无论是通过ipc（进程间通信）还是本地存储文件进行通信，都要求它们运行在同一台机器上。
+
+容器被设计为每个容器只运行一个进程（除非进程本身产生子进程）。如果在单个容器中运行多个不相关的进程，那么保持所有进程运行、管理它们的日志等将会是我们的责任。
+
+我们需要让每个进程运行于自己的容器中，这是Docker和Kubernetes期望使用的方式。
+
+### 3.1.2 Understanding pods
+
+由于不能将多个进程聚集在一个单独的容器中，我们需要另一种更高级的结构来将容器绑定在一起，并将它们作为一个单元进行管理，这就是pod背后的根本原理。
+
+**同一个pod中容器之间的部分隔离**
+
+Kubernetes通过配置Docker来让一个pod内的所有容器共享相同的Linux命名空间，而不是每个容器都有自己的一组命名空间。
+
+由于一个pod中的所有容器都在相同的network和UTS命名空间下运行，所以它们都共享相同的主机名和网络接口。同时，这些容器也都在相同的IPC命名空间下运行，因此能够通过IPC进行通信。在最新的Kubernetes和Docker版本中，它们也能共享相同的PID命名空间，但该特性默认是未激活的。
+
+由于大多数容器的文件系统来自容器镜像，因此默认情况下，每个容器的文件系统与其他容器完全隔离。但我们可以使用名为Volume的Kubernetes来共享文件目录。
+
+**容器如何共享相同的IP和端口空间**
+
+由于一个pod中的容器运行于相同的Network命名空间中，因此它们共享相同的IP和端口空间。在同一个pod中的容器运行得多个进程需要注意不能绑定相同的端口号，否则会导致端口冲突。此外，一个pod中的所有容器也都具有相同的loopback网络接口，因此容器可以通过localhost与同一pod中的其他容器进行通信。
+
+**The flat intro-pod network（平坦Pod间网络）**
+
+Kubernetes集群中的所有pod都在同一个共享网络地址空间中（如下图所示），这意味着每个pod都可以通过其他pod的IP地址来实现互相访问。换句话说，这也表示它们之间没有NAT（网络地址转换）网关。当两个pod彼此间发送网络数据包时，它们都会将对象的实际IP地址看作数据包中的源IP。
+
+![image](https://github.com/janwee-sha/reading-notes/blob/main/SystemDesign/images/Kubernetes.in.Action.Figure.3.2.png)
+
+Pod间的通信非常简单。不论两个Pod处于单一还是不同的工作节点上，且不论实际节点间的网络拓扑结构如何，这些Pod内的容器都能像在无NAT的平坦网络中一样相互通信，就像局域网（LAN）上的计算机一样。
+
+### 3.1.3 Organizing containers across pods properly
+
+1. **将多层应用分散到多个pod中**。提高基础架构的利用率。
+2. **基于扩容考虑而分割到多个pod中。**
+

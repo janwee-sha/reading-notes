@@ -208,30 +208,137 @@ Redis的命令从客户端到达服务端不会立刻被执行，所有命令都
 - **纯内存访问**。Redis将所有数据放在内存中。
 - **非阻塞I/O**。Redis使用epoll作为I/O多路复用的实现，再加上Redis自身的事件处理模型将epoll的连接、读写、关闭都转换为事件，不在网络I/O上浪费过多的时间。如图所示：
 
-![image](https://note.youdao.com/favicon.ico)
+![image](https://github.com/janwee-sha/reading-notes/blob/main/NoSQL/images/Redis.IO.Multiplexing.and.Event.Model.png)
+
+- **单线程避免了线程切换和竞态产生的消耗**。
+
+## 2.2 字符串
+
+字符串类型是Redis最基本的数据结构。首先键都是字符串类型，而且其他几种数据结构都是在字符串的基础上构建的。字符串类型的值可以是字符串（简单的字符串、复杂的字符串（如JSON、XML））、数字（整数、浮点数），甚至是二进制（图片、音频、视频），但是值最大不能超过512MB。
+
+> 《Redis设计与实现》：Redis没有直接使用C语言传统的字符串（以空字符结尾的字符数组）表示，而是构建了一种名为简单动态字符串（Simple Dynamic String, SDS）的抽象类型，并将SDS用作Redis的默认字符串表示。
+> 在Redis里面，C字符串自会作为字符串字面量用在一些无须对字符串值进行修改的地方，比如打印日志。
 
 
+### 2.2.1 命令
 
+**1. 常用命令**
 
+(1). 设置值
 
+```
+SET key value [NX|XX] [GET] [EX seconds|PX milliseconds|EXAT unix-time-seconds|PXAT unix-time-milliseconds|KEEPTTL]
+```
 
-- redis-cli -v //查看Redis版本
+参数选项：
 
-- type 键名 //键的数据结构类型
+- EX seconds：为键设置秒级过期时间。
+- PX milliseconds：为键设置毫秒级过期时间。
+- NX：键必须不存在，才可以设置成功。
+- XX：键必须存在，才可以设置成功。
 
-- object encoding 键名 //键的命令查询内部编码
-- keys 正则表达式 //全量遍历键
-- scan 正则表达式 //渐进遍历键
-- select 数据库索引ID //切换数据库
-- rename key newkey //重命名键
-- randomkey //随机返回一个键
-- move key db //迁移键
-- dump+restore组合命令 //可实现在不同的Redis实例之间进行数据迁移功能
-- 
-- migrate 主机 端口号 键 目标数据库 超时时间...//实际就是将dump、restore、del三个命令进行组合
+Redis还提供了`SETEX`和`SETNX`两个命令：
 
-- flushdb //清除当前数据库数据
-- flushall //清除所有数据库数据
+```
+SETNX key value
+SETEX key seconds value
+```
+
+批量设置值：
+
+```
+MSET key value [key value ...]
+```
+
+（2）获取值
+
+```
+GET key
+```
+
+批量获取值：
+
+```
+MGET key [key ...]
+```
+
+（3）计数
+
+```
+INCR key
+```
+
+`INCR`命令用于对值做自增操作，返回结果分三种情况：
+
+- 值不是整数，返回错误。
+- 值是整数，返回自增后的结果。
+- 值不存在，按照值为0自增，返回结果为1。
+
+Redis还提供了`DECR`、`INCRBY`、`DECRBY`、`INCRBYFLOAT`。
+
+**2. 不常用命令**
+
+（1）追加值
+
+```
+APPEND key value
+```
+
+`APPEND`可以向字符串尾部追加值。
+
+（2）字符串长度
+
+```
+STRLEN key
+```
+
+（3）设置并返回原值
+
+```
+GETSET key value
+```
+
+`GETSET`和`SET`一样会设置值，但不同的是它会同时返回键原本的值。
+
+（4）设置指定位置的字符
+
+```
+SETRANGE key offset value
+```
+
+（5）获取部分字符串
+
+```
+GETRANGE key start end
+```
+
+### 2.2.2 内部编码
+
+字符串类型的内部编码有三种：
+
+- int：8个字节的长整型。
+- embstr：小于等于39个字节的长字符串。
+- raw：大于39个字节的字符串。
+
+Redis会根据当前值的类型和长度决定使用哪种内部编码实现。
+
+### 2.2.3 典型使用场景
+
+**1. 缓存功能**
+
+由于Redis具有支撑高并发的特性，所以缓存通常能起到加速读写和降低后端压力的作用。
+
+与MySQL等关系型数据库不同的是，Redis没有命名空间，而且也没有对键名有强制要求（除了不能使用一些特殊字符）。但设计合理的键名，有利于防止键冲突，提高项目的可维护性。比较推荐使用“业务名：对象名：ID：属性”作为键名。
+
+**2. 计数**
+
+使用Redis可以实现快速计数、查询缓存的功能，同时数据可以异步落地到其他数据源。
+
+**3. 共享Session**
+
+一个分布式Web服务将用户的Session信息（例如用户登录信息）保存在各自服务器中，这样会造成一个问题，处于负载均衡的考虑，分布式服务会将用户的访问均衡到不同服务器上，用户刷新一次访问可能会发现需要重新登录，这个问题是用户无法容忍的。
+
+为了解决这个问题，可以使用Redis将用户的Session进行集中管理，在这种模式下只要保证Redis是高可用和扩展性的，每次用户更新或者查询登录信息都直接从Redis中集中获取。
 
 # 慢查询分析
 
