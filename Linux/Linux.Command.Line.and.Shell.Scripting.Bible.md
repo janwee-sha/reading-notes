@@ -1,4 +1,6 @@
-# CHAPTER 1: Starting with Linux
+> The following are references of [*Linux Command Line and Shell Scripting Bible, 4th Edition*](https://www.amazon.com/Linux-Command-Shell-Scripting-Bible-ebook/dp/B08Q7XV6JC).
+
+# 1. Starting with Linux
 
 ## 1.1 What is Linux
 
@@ -21,7 +23,6 @@ The Linux system：
 
 ### 1.1.1 Looking into the Linux Kernel
 
-The core of Linux system is the **kernel**.The kernel controlls
 Linux的核心是**内核**。内核控制着计算机系统上的所有硬件和软件，在必要时分配硬件，并根据需要执行软件。
 
 内核主要负责以下四种功能：
@@ -131,7 +132,7 @@ Linux系统通常有好几种Linux shell可用。所有Linux发行版的默认sh
 - GNOME桌面
 - Unity桌面
 
-# CHAPTER 2: Getting to the Shell
+# 2. Getting to the Shell
 
 ## 2.1 进入命令行
 
@@ -142,15 +143,27 @@ Linux系统通常有好几种Linux shell可用。所有Linux发行版的默认sh
 - 控制台终端
 - 图形化终端
 
-# CHAPTER 3: Basic Bash Shell Commands
+# 3. Basic Bash Shell Commands
 
-## 3.4 浏览文件系统
+## 3.1 Starting the Shell
 
-## 3.4.1 Linux文件系统
+The GNU Bash shell is a program that provides interactive access to the Linux system. It runs as a regular program and is normally started whenever a user logs into a terminal.
+
+The shell that the system starts depends on your user ID configuration. The */etc/passwd* file contains a list of all the system user accounts, along with basic configuration information about each user. Here's a sample:
+
+```
+root:x:0:0:root:/root:/bin/bash
+```
+
+Every entry has seven data fields, separated by colons (:). The last field sepecifies the user's shell program, in this case it's the GNU Bash shell program.
+
+## 3.4 Navigating the Filesystem
+
+## 3.4.1 Looking at the Linux filesystem
 
 Linux在路径名中不使用驱动器盘符。
 
-在Windows中，PC上安装的物理驱动器决定了文件的路径名。Windows回味每个物理磁盘驱动器分配一个盘符，每个驱动器都有自己的目录结构。
+在Windows中，PC上安装的物理驱动器决定了文件的路径名。Windows会为每个物理磁盘驱动器分配一个盘符，每个驱动器都有自己的目录结构。
 
 Linux则将文件存储在单个目录结构中，这个目录称为**虚拟目录**。虚拟目录将安装在PC上的所有存储设备的文件路径纳入单个目录结构中。
 
@@ -163,22 +176,9 @@ Linux PC上安装的第一块硬盘称为**根驱动器**。根驱动器是虚�
 Linux会在根驱动器上创建一些特别的目录，即**挂载点**（mount point）。挂载点是虚拟目录中用于分配额外存储设备的目录。
 
 **Linux文件结构**:
-```
-classDiagram
-Disk1 o-- Disk2 : home
-Disk1 : bin
-Disk1 : etc
-Disk1 : usr
-Disk1 : var
-Disk1 : home
-Disk1 : ...
-Disk2 : rich
-Disk2 : janwee
-Disk2 : ...
-```
+![image](https://note.youdao.com/favicon.ico)
 
-## 3.4.2 遍历目录
-
+## 3.4.2 Traversing directories
 
 切换到系统中的某个特定位置：
 
@@ -186,7 +186,7 @@ Disk2 : ...
 $ cd destination
 ```
 
-**1. 绝对文件路径**
+#### Using absolute directory references
 
 绝对文件路径以正斜线（/）作为起始。
 
@@ -201,16 +201,17 @@ pwd: pwd [-LP]
     		directory
       -P	print the physical directory, without any symbolic links
 ```
-**2. 相对文件路径**
+
+#### Using relative directory references
 
 有两个特殊字符可用于相对路径中：
 
 - 单点符（.），表示当前目录；
 - 双点符（..），表示当前目录的父目录。
 
-## 3.5 文件和目录列表
+## 3.5 Listing Files and Directories
 
-### 3.5.1 基本列表功能
+### 3.5.1 Displaying a basic listing
 
 ```
 Usage: ls [OPTION]... [FILE]...
@@ -234,13 +235,13 @@ Options:
 
 option参数：
 
-- -F：在目录名后加上/，在可执行文件后面加上*。
-- -a: 显示包含**隐藏文件**在内的所有文件。
-- -R：递归选项。
+- `-F`：在目录名后加上`/`，在可执行文件后面加上`*`。
+- `-a`: 显示包含**隐藏文件**在内的所有文件。
+- `-R`：递归选项。
 
-### 3.5.2 显示长列表
+### 3.5.2 Displaying a long listing
 
-ls命令的-l参数可显示每个文件和目录的附加信息。
+`ls` 命令的 `-l` 参数可显示每个文件和目录的附加信息。
 
 ```
 $ ls -l
@@ -261,17 +262,22 @@ drwxr-xr-x   3 root root       4096 Oct 21  2020 home
 - 文件的上次修改时间；
 - 文件名或目录名。
 
-### 3.5.3 过滤输出列表
+### 3.5.3 Filtering listing output
 
-ls命令能识别标准通配符，并在过滤器中对它们进行模式匹配：
+`ls` 命令能识别标准通配符，并在过滤器中对它们进行模式匹配：
 
-- 问号（?）代表一个字符；
-- 星号（*）代表零个或多个字符。
+- 问号（`?`）代表一个字符；
+- 星号（`*`）代表零个或多个字符。
 - ...
 
-## 3.6 处理文件
+```
+$ ls -l do*
+-rw-r--r-- 1 root root 869 Feb  5 09:36 do_not_go_gentle.txt
+```
 
-### 3.6.1 创建文件
+## 3.6 Handling Files
+
+### 3.6.1 Creating files
 
 创建空文件、改变文件的修改时间：
 
@@ -286,7 +292,7 @@ A FILE argument string of - is handled specially and causes touch to
 change the times of the file associated with standard output.
 ```
 
-### 3.6.2 复制文件
+### 3.6.2 Copying files
 
 ```
 Usage: cp [OPTION]... [-T] SOURCE DEST
@@ -359,13 +365,142 @@ Create link：
   -v, --verbose               列出每个链接的文件名称
 ```
 
-# CHAPTER 4、More Bash Shell Commands
+## 3.7 Managing Directories
+
+### 3.7.1 Creating directories
+
+创建目录的命令：
+
+```
+mkdir [OPTION]... DIRECTORY...
+```
+
+也可以使用 `mkdir` 命令地 `-p` 选项“批量”地创建目录和子目录。
+
+### 3.7.2 Deleting directories
+
+The basic command for removing a directory is:
+
+```
+rmdir [OPTION]... DIRECTORY...
+```
+
+By default, the `rmdir` command works only for removing *empty* directories.
+
+The `rmdir` has no `-i` option to ask if you want to remove the directory.
+
+You can also use the `rm` command on entire nonempty directories. Using the `-r` option allows the command to descend into the directory, remove the files, and then remove the directory itself.
+
+The ultimate solution for quickly deleting a directory tree is the `rm -rf` command. It gives no warnings and no messages, and it just deletes the directory specified and all its contents.
+
+## 3.8 Viewing File Contents
+
+You can use serval commands for looking indide files without having to pull out a text editor utility.
+
+### 3.8.1 Viewing the file type
+
+The `file` command is a handy little utility. It can peek inside a file and determine just what kind of file it is.
+
+The `file` command determined not only that the file contains text but also the character code format of the text file, ASCII:
+
+```
+$ file hello.txt 
+hello.txt: ASCII text
+```
+It can give you another method to distinguish a directory:
+
+```
+$ file bin
+bin: directory
+```
+
+The following example shows a file that is a symbolic link and which file it is symbolically linked:
+
+```
+$ file man
+man: symbolic link to share/man
+```
+
+The example below shows what the command returns for a script file:
+```
+$ file my_script
+my_script: Bourne-Again shell script, ASCII text executable
+```
+
+The final example is a binary executable program. The command determines the platform that the program was compiled for and what types of libraries it requires:
+
+```
+$ file kubelet
+kubelet: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, BuildID[sha1]=2247cf948cf079f8ad8339a92cd443f38c4fc350, for GNU/Linux 3.2.0, stripped
+```
+
+### 3.8.2 Viewing the whole file
+
+#### Using the `cat` command
+
+Usage of the `cat` command:
+
+```
+cat [OPTION]... [FILE]...
+```
+
+The `-n` parameter numbers all the line for you.
+
+```
+$ cat -n 长相思.txt
+     1	山一程，水一程，
+     2	身向榆关那畔行，
+     3	夜深千帐灯。
+     4	风一更，雪一更，
+     5	聒碎乡心梦不成，
+     6	故园无此声。
+```
+
+The `-b` parameter let you number the lines that have text in them.
+
+#### Using the more command
+
+```
+more [options] <file>...
+```
+
+When you are finished navigating through the file using `more`, type **q** to quit.
+
+For more advanced features, try the `less` command.
+
+#### Using less command.
+
+One set of features is that the  `less` command recognize the up and down arrow keys as well as yje Page Up and Page Down keys.
+
+### 3.8.3 Viewing part of a file
+
+#### Using the `tail` command
+
+The `tail` command displays the last lines in a file. By default, it shows the last 10 lines in the file.
+
+```
+Usage: tail [OPTION]... [FILE]...
+Print the last 10 lines of each FILE to standard output.
+With more than one FILE, precede each with a header giving the file name.
+```
+
+The `-f` parameter is a pretty cool feature of the `tail` command. It allows you to peek inside a file as the file is being used by other process. The `tail` command stays active and continues to display new lines as they appear in the text file. This is a great way to monitor the system log files in real-time mode.
+
+#### Using the `head` command
+
+```
+Usage: head [OPTION]... [FILE]...
+Print the first 10 lines of each FILE to standard output.
+With more than one FILE, precede each with a header giving the file name.
+```
+
+# 4. More Bash Shell Commands
 
 ## 4.1 Monitoring Programs
 
 ### 4.1.1 Peeking at the processes
 
-The basic ps command doesn't provide all that much imformation：
+The basic `ps` command doesn't provide all that much imformation：
 
 ```
 $ ps
@@ -376,71 +511,101 @@ $ ps
 
 By default the ps command shows only the processes that belongs to the current user and that are running on the current terminal.
 
-The basic output shows the process ID (PID) of the programs, the terminal (TTY) that they are running from, and the CPU time the process has used.
+The basic output shows the process ID ( `PID` ) of the programs, the terminal ( `TTY` ) that they are running from, and the CPU time the process has used.
 
-The GNU ps command that's used in Linux systems supports three different types of command-line parameters:
+The GNU `ps` command that's used in Linux systems supports three different types of command-line parameters:
 
 - Unix-style parameters, which are preceded by a dash.
 - BSD-style parameters, which are not preceded by a dash.
 - GNU long parameters, which are preceded by a double dash.
 
-**Unix-style parameters**
+#### Unix-style parameters
 
 
 | Parameter | Description |
 | --- | --- |
-| -A | Show all processes. |
-| -N | Show the oppsite of specified parameters. |
-| -a | Show all processes except session headers and processes without a terminal. |
-| -d | Show all processes except session headers. |
-| -e | Show all processes. |
-| -C cmdlist | Show processes contained in the list cmdlist. |
-| -G grplist | Show processes with a group ID listed in grplist. |
-| -U userlist | Show processes owned by a user ID listed in userlist. |
-| -g grplist | Show processes by session or by group ID contained in grplist. |
-| -p pidlist | Show processes with PIDs in the list pidlist. |
+| `-A` | Show all processes. |
+| `-N` | Show the oppsite of specified parameters. |
+| `-a` | Show all processes except session headers and processes without a terminal. |
+| `-d` | Show all processes except session headers. |
+| `-e` | Show all processes. |
+| `-C <cmdlist>` | Show processes contained in the list `cmdlist`. |
+| `-G <grplist>` | Show processes with a group ID listed in `grplist`. |
+| `-U <userlist>` | Show processes owned by a user ID listed in `userlist`. |
+| `-g <grplist>` | Show processes by session or by group ID contained in `grplist`. |
+| `-p <pidlist>` | Show processes with PIDs in the list `pidlist`. |
+| `-f` | Display a full format listing. |
+| `-l` | Display a long listing. |
 | ... | ... |
 
-A few useful columns of informations:
+Use the `-ef` parameter combination to see everything running on the system:
 
-- **UID**: The user responsible for lauching the process
-- **PID**: The process ID of the process
-- **PPID**: The PID of the parent process
-- **C**: Processor utilization over the lifetime of the process
-- **STIME**: The system time when the process started
-- **TTY**: The terminal device from which the process was launched
-- **TIME**: The cumulative CPU time required to run the process
-- **CMD**: The name of the program that was started
+```
+ps -ef
+UID          PID    PPID  C STIME TTY          TIME CMD
+root           1       0  0  2022 ?        00:46:56 /sbin/init
+root           2       0  0  2022 ?        00:00:04 [kthreadd]
+root           3       2  0  2022 ?        00:00:00 [rcu_gp]
+...
+root     3058187       2  0 03:00 ?        00:00:00 [kworker/u4:2-events_power_efficient]
+root     3059439 3018866  0 03:02 pts/0    00:00:00 ps -ef
+```
+A few useful columns of informations above:
 
-**BSD-style parameters**
+- `UID`: The user responsible for lauching the process
+- `PID`: The process ID of the process
+- `PPID`: The PID of the parent process
+- `C`: Processor utilization over the lifetime of the process
+- `STIME`: The system time when the process started
+- `TTY`: The terminal device from which the process was launched
+- `TIME`: The cumulative CPU time required to run the process
+- `CMD`: The name of the program that was started
+
+For even moreinformation, use the `-l` parameter.
+
+#### BSD-style parameters
 
 The Berkeley Software Distribution (BST) was a version of Unix developed at the University of California, Berkeley.
 
 
 | Parameter | Description |
 | --- | --- |
-| T | Show all processes associated with this terminal. |
-| a | Show all processes associated with any terminal. |
-| g | Show all processes, including session headers. |
-| r | Show only running processes. |
+| `T`| Show all processes associated with this terminal. |
+| `a` | Show all processes associated with any terminal. |
+| `g` | Show all processes, including session headers. |
+| `r` | Show only running processes. |
 | ... | ... |
 
-**The GNU long parameters**
+#### The GNU long parameters
 
 | Parameter | Description |
 | --- | --- |
-| --deselect | Show all processes except those listed in the command line. |
-| --Group grplist | Show processes whose group ID is listed in grplist. |
-| -User userlist | Show processes whose user ID is listed in userlist. |
+| `--deselect` | Show all processes except those listed in the command line. |
+| `--Group <grplist>` | Show processes whose group ID is listed in grplist. |
+| `-User <userlist>` | Show processes whose user ID is listed in userlist. |
 | ... | ... |
 
-**Real-time process monitoring**
+### 4.1.2 Real-time process monitoring
 
-The ps command can display information for only a specific point in time. If you're trying to find trends about processes that are frequently swapped in and out of memory, it's hard to do that with the ps command.
+The `ps` command can display information for only a specific point in time. 
 
-Instead, the top command can solve this problem. The top command displays process information similarly to the ps command, but it does so in real-time mode.
+The `top` command displays process information similarly to the `ps` command, but it does so in real-time mode.
 
-Some information columns of the top command:
+```
+top - 03:23:13 up 69 days, 13:01,  1 user,  load average: 0.32, 0.36, 0.42
+Tasks: 167 total,   1 running, 166 sleeping,   0 stopped,   0 zombie
+%Cpu(s):  6.9 us,  4.2 sy,  0.0 ni, 88.6 id,  0.0 wa,  0.0 hi,  0.2 si,  0.2 st
+MiB Mem :   2488.5 total,     82.8 free,    808.9 used,   1596.8 buff/cache
+MiB Swap:   2048.0 total,   1589.7 free,    458.2 used.   1375.4 avail Mem 
+
+    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND                                                                                                                        
+ 287678 root      20   0 1116868 229112  22316 S   4.7   9.0   2252:15 kube-apiserver                                                                                                                 
+ 299992 root      20   0 1937668  57192  18480 S   2.3   2.2   1538:50 kubelet
+```
+
+The first selction of the output shows general system  information. The next section shows a detailed list of the current running processes.
+
+Some information columns of the `top` command:
 
 - **PID**
 - **USER**
@@ -455,4 +620,6 @@ Some information columns of the top command:
 - **TIME+**: The total CPU time the process has used since starting
 - **COMMAND**: The command-line name of the process (program started)
 
+### 4.1.3 Stopping process
 
+<To be continued>
