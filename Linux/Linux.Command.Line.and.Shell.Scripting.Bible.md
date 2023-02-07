@@ -176,7 +176,8 @@ Linux PC上安装的第一块硬盘称为**根驱动器**。根驱动器是虚�
 Linux会在根驱动器上创建一些特别的目录，即**挂载点**（mount point）。挂载点是虚拟目录中用于分配额外存储设备的目录。
 
 **Linux文件结构**:
-![image](https://note.youdao.com/favicon.ico)
+
+![image](https://github.com/janwee-sha/reading-notes/blob/main/Linux/images/L.C.L.a.S.S.B.Figure.3-3.jpg)
 
 ## 3.4.2 Traversing directories
 
@@ -622,4 +623,122 @@ Some information columns of the `top` command:
 
 ### 4.1.3 Stopping process
 
+In Linux, processes communicate with each other using *signals*, predifined messages that processes recognize and may choose to ignore or act on.
+
+**TABLE: Linux Process Signals**
+
+
+| Signal | Name | Description |
+| --- | --- | --- |
+| 1 | HUP | Hang up. |
+| 2 | INT | Interrupt. |
+| 3 | QUIT | Stop running. |
+| 9 | KILL | Unconditionally terminate. |
+| 11 | SEGV | Segment violation. |
+| 15 | TERM | Terminate if possible. |
+| 17 | STOP | Stop unconditionally but don't terminate. |
+| 18 | TSTP | Stop or pause but continue to run in background. |
+| 19 | CONT | Resume execution after STOP or TSTP. |
+
+#### The `kill` command
+
+Usage of `kill` command:
+
+```
+kill: kill [-s sigspec | -n signum | -sigspec] pid | jobspec ... or kill -l [sigspec]
+```
+
+By default, the `kill` command sends a *TERM* signal to all the PIDs listed on the command line. To send a process signal, you must either be the owner of the process or be logged in as the root user.
+
+The **TERM** signal tells the process to stop running. A runaway process most likely will ignore the request. The `-s` parameter allows you to specify other signals.
+
 <To be continued>
+
+## 4.3 Working with Data Files
+
+### 4.3.1 Sorting data
+
+Usage of `sort` command:
+
+```
+Usage: sort [OPTION]... [FILE]...
+  or:  sort [OPTION]... --files0-from=F
+Write sorted concatenation of all FILE(s) to standard output.
+```
+
+By default, the `sort` command sorts the data lines in a text file using standard sorting rules for the language you specify as the default for the session:
+
+```
+$ sort weekdays.txt
+Friday
+Monday
+Saturday
+Sunday
+Thursday
+Tuesday
+Wednesday
+```
+
+<To be continued>
+
+### 4.3.2 Searching for data
+
+Usage of `grep` command:
+
+```
+grep [OPTION]... PATTERNS [FILE]...
+```
+
+The `grep` command searches either the input or the file specified:
+
+```
+$ ls | grep 3
+textfile3.txt
+
+$ grep three numbers.txt
+three
+```
+
+Use the `-v` parameter to reverse the search:
+
+```
+$ grep -v three numbers.txt
+one
+two
+```
+
+Use the `-n` parameter to output the line numbers where the patterns are found:
+
+```
+$ grep -vn three numbers.txt
+1:one
+2:two
+```
+
+Use the `-c` parameter to count how many lines contain the matching pattern:
+
+```
+$ grep -vc three numbers.txt
+2
+```
+
+Use the `-e` parameter to specify more than one matching pattern:
+
+```
+$ grep -e one -e three numbers.txt
+one
+three
+```
+
+By default, the `grep` command uses basic UNIX-style regular expressions, which uses special characters to define how to look for matching patterns, to match patterns. 
+
+Here's a simple example:
+
+```
+$ grep [TF] weekdays.txt 
+Tuesday
+Thursday
+Friday
+```
+
+The `egrep` command is an offshoot of `grep`, which alows you to specify POSIX extended regular expressions. The `fgrep` command is another version that allows you to specify matching patterns as a list of fixed-string values, separated by newline charaters. 
