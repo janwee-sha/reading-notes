@@ -652,7 +652,128 @@ By default, the `kill` command sends a *TERM* signal to all the PIDs listed on t
 
 The **TERM** signal tells the process to stop running. A runaway process most likely will ignore the request. The `-s` parameter allows you to specify other signals.
 
-<To be continued>
+No output is associated with the `kill` command:
+
+```
+$ kill -s HUP 807
+```
+
+To see if the command was effective, you'll have to perform another `ps` or `top` command.
+
+#### The `pkill` command
+
+The `pkill` command is a way to stop process by using their names rather than the PID numbers, it allows you to use wildcard characters as well:
+
+Usage of `pkill`:
+```
+pkill [options] <pattern>
+```
+
+## 4.2 Monitoring Disk Space
+
+### 4.2.1 Mounting media
+
+The task which places a new media disk in the virtual directory is called *mounting*.
+
+#### The `mount` command
+
+Usage of `mount` command:
+
+```
+ mount [-lhV]
+ mount -a [options]
+ mount [options] [--source] <source> | [--target] <directory>
+ mount [options] <source> <directory>
+ mount <operation> <mountpoint> [<target>]
+```
+
+By default, the `mount` command displays a list of media devices currently mounted on the system.
+
+The output of the `mount` command can be very cluttered and confusing because there would be lots of virtual filesystems for management purposes besides your standard storage devices.
+
+You can use `-t` parameter to limit the set of filesystem types:
+
+```
+$ mount -t ext4
+/dev/vda1 on / type ext4 (rw,relatime,errors=remount-ro)
+```
+
+The `mount` command provides four pieces of information:
+- The device filename of the media
+- The mount point in the virtual directory where the media is mountted
+- The filesystem type
+- The access status of the mounted media
+
+The basic command for manually mounting a media device:
+
+```
+mount -t type device directory
+```
+
+#### The `umount` command
+
+To remove a removable media device, *unmount* it first, then remove it from the system.
+
+The command used to unmount devices is `umount` (not "unmount").
+
+Usage of `umount` command:
+
+```
+umount [-hV]
+umount -a [options]
+umount [options] <source> | <directory>
+```
+
+The `umount` command gives you the choice of defining the media device by either its device location or its mounted directory name.
+
+#### The `df` command
+
+Usage of `df` command:
+
+```
+df [OPTION]... [FILE]...
+```
+
+Use `-t` parameter to filter the output by specifying the filesystem type.
+
+```
+df -t ext4
+Filesystem     1K-blocks     Used Available Use% Mounted on
+/dev/vda1       54694496 15081256  36818308  30% /
+```
+
+> 1K-blocks: How many 1024-byte blocks of data the media can hold
+> Used: Used 1024-bytes blocks
+> Available: Available 1024-bytes blocks
+
+Use `-h` parameter to show the disk space in human-readable form:
+
+```
+# df -h
+Filesystem      Size  Used Avail Use% Mounted on
+udev            1.2G     0  1.2G   0% /dev
+tmpfs           249M  660K  249M   1% /run
+tmpfs           1.3G     0  1.3G   0% /sys/fs/cgroup
+```
+
+#### The `du` command
+
+The `du` command shows the disk usage of a specific directory.
+
+Usage:
+
+```
+Usage: du [OPTION]... [FILE]...
+  or:  du [OPTION]... --files0-from=F
+```
+
+By default, the `du` command displays all the files, directories, and subdirectories under the current directory.
+
+Use the following command-line parameters with the `du` command to make the output more legible:
+
+- `-c`: produce a grand total
+- `-h`: print sizes in human readable format
+- `-s`: display only a total for each argument
 
 ## 4.3 Working with Data Files
 
@@ -679,7 +800,39 @@ Tuesday
 Wednesday
 ```
 
-<To be continued>
+Use the `-n` parameter to tell the `sort` commmand to recognize numbers and to sort them based on their numerical values:
+
+```
+$ sort -n numbers.txt
+1
+2
+6
+10
+33
+```
+
+Use the `-M` parameter to do the month sort:
+
+```
+$ sort -M somelog.log 
+Jan 1 01:01:01 Device opened
+Jan 1 08:20:01 Device closed
+Jan 1 09:08:15 Device shut down
+Apr 13 07:10:09 Device opened
+```
+
+The `-k` and `-t` parameters are handy when sorting data that uses fields, such as the `/etc/passwd` file. Use the `-t` parameter to specify the field separator character, and use the `-k` parameter to specify which field to sort on.
+
+For example:
+
+```
+$ sort -t ':' -k 5 /etc/passwd
+backup:x:34:34:backup:/var/backups:/usr/sbin/nologin
+bin:x:2:2:bin:/bin:/usr/sbin/nologin
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+...
+www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
+```
 
 ### 4.3.2 Searching for data
 
@@ -742,3 +895,9 @@ Friday
 ```
 
 The `egrep` command is an offshoot of `grep`, which alows you to specify POSIX extended regular expressions. The `fgrep` command is another version that allows you to specify matching patterns as a list of fixed-string values, separated by newline charaters. 
+
+# 5. Understanding the Shell
+
+## 5.1 Investing Shell Types
+
+<To be continued>
