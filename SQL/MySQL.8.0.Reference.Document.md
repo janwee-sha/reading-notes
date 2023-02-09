@@ -102,3 +102,12 @@ PURGE MASTER LOGS TO 'mylog.000004';
 ```
 PURGE MASTER LOGS TO '2019-12-20 15:00:00";
 ```
+
+#### 使用二进制日志还原数据库
+
+二进制日志还原数据库的命令如下：
+
+```
+mysqlbinlog <file> | mysql -u root -p
+```
+以上命令可以理解成，先使用 `mysqlbinlog` 命令来读取 <file> 中的内容，再使用 `mysql` 命令将这些内容还原到数据库中。
