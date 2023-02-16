@@ -298,7 +298,7 @@ HTTP协议中设有两类Header实现强制缓存：
 
 2. 客户端将地址发送给本机操作系统中配置的本地DNS（Local DNS），这个本地DNS服务器可以由用户手工设置，也可以在DHCP分配时或者在拨号时从PPP服务器中自动获取到。
 
-3. Local DNS收到查询请求后，会按照“是否有`www.baidu.com`的权威服务器”——>“是否有`baidu.com`的权威服务器”——>“是否有`com`的权威服务器”的顺序，一次查询自己的地址记录，若都没查到，就会一致找到最后点号代表的根域名服务器为止。
+3. Local DNS收到查询请求后，会按照“是否有`www.baidu.com`的权威服务器”——>“是否有`baidu.com`的权威服务器”——>“是否有`com`的权威服务器”的顺序，一次查询自己的地址记录，若都没查到，就会一直找到最后点号代表的根域名服务器为止。
 - **权威域名服务器**（Authoritative DNS）：是指负责翻译特定域名的DNS服务器，“权威”意味着这个域名应该翻译出怎样的结果是由它来决定的。
 - **根域名服务器**（Root DNS）：是指固定的、无需查询的顶级域名服务器，可以默认为它们已内置在操作系统代码之中。全世界一共有13组根域名服务器（不是13台，每一组根域名服务器都通过 [任播](https://en.wikipedia.org/wiki/Anycast) 的方式建立一大群镜像，根据危机百科的数据，迄今已有超过1000台根域名服务器的镜像了）。
 
@@ -332,9 +332,58 @@ CDN的工作过程，主要涉及路由解析、内容分发、负载均衡和�
 
 内容分发网络将用户请求路由到它的资源服务器上就是依靠DNS服务器来实现的。一次没有CDN参与的用户访问，其解析过程如图：
 
-![image](https://note.youdao.com/favicon.ico)
+![image](https://github.com/janwee-sha/reading-notes/blob/main/SystemDesign/images/icyfenix.figure.4.5.png)
+
+有内容分发网络介入会发生什么变化呢？以对网站 `icyfenix.cn` 进行DNS查询的真实应答记录，这个网站就是通过国内的内容分发网络对位于 GitHub Pages 上的静态页面进行加速的。使用`dig` 命令的查询结果如下：
+
+```
+$ dig icyfenix.cn
+
+; <<>> DiG 9.16.37 <<>> icyfenix.cn
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 25276
+;; flags: qr rd ra; QUERY: 1, ANSWER: 8, AUTHORITY: 0, ADDITIONAL: 0
+
+;; QUESTION SECTION:
+;icyfenix.cn.                   IN      A
+
+;; ANSWER SECTION:
+icyfenix.cn.            1       IN      CNAME   icyfenix.cn.cdn.dnsv1.com.
+icyfenix.cn.cdn.dnsv1.com. 1    IN      CNAME   4yi4q4z6.slt.sched.tdnsv8.com.
+4yi4q4z6.slt.sched.tdnsv8.com. 1 IN     A       36.147.37.102
+4yi4q4z6.slt.sched.tdnsv8.com. 1 IN     A       36.147.37.197   
+4yi4q4z6.slt.sched.tdnsv8.com. 1 IN     A       117.187.179.210
+4yi4q4z6.slt.sched.tdnsv8.com. 1 IN     A       36.147.37.113
+4yi4q4z6.slt.sched.tdnsv8.com. 1 IN     A       117.187.179.102
+4yi4q4z6.slt.sched.tdnsv8.com. 1 IN     A       36.147.37.210
+
+;; Query time: 7 msec
+;; SERVER: 192.168.1.1#53(192.168.1.1)
+;; WHEN: Tue Feb 14 15:50:43 ;; MSG SIZE  rcvd: 204
+```
+
+以上解析信息表明，DNS服务为 `icyfenix.cn` 的查询结果先返回了一个 [CNAME 记录](https://en.wikipedia.org/wiki/CNAME_record)（`icyfenix.cn.cdn.dnsv1.com.`），递归查询该CNAME时，返回了一个看起来更奇怪的CNAME（`4yi4q4z6.slt.sched.tdnsv8.com.`）。继续查询后，这个CNAME返回了十几个位于全国不同地区的A记录，很明显，那些就是分布在全国各地、存有本站缓存的CDN节点。
+
+CDN路由解析的具体工作过程是：
+
+1. 架设好 `icyfenix.cn` 的服务器后，将服务器的IP地址在你的CDN服务商上注册为“源站”，注册后获得一个CNAME，即本例中的 `icyfenix.cn.cdn.dnsv1.com.`。
+2. 将得到的CNAME在你购买域名的DNS服务商上注册为一条CNAME记录。
+3. 当第一位用户来访你的站点时，将首先发生一次未命中缓存的DNS查询，域名服务商解析出CNAME后，返回给本地DNS，此后链路解析的主导权就开始由内容分发网络的调度服务接管了。
+4. 本地DNS查询CNAME时，由于能解析该CNAME的权威服务器只有CDN服务商架设的权威DNS，这个DNS服务将根据一定的均衡策略和参数，如拓扑结构、容量、时延等，在全国各地能提供服务的CDN缓存节点中挑选一个最适合的，将它的IP代替源站的IP地址，返回给本地DNS。
+5. 浏览器从本地拿到IP地址，将该IP当作源站服务器来进行访问，此时该IP的CDN节点上可能有，也可能没有缓存过源站的资源（这点将在“内容分发”小节中讨论）。
+6. 经过内容分发后的CDN节点，就有能力代替源站向用户提供所请求的资源。
 
 ### 内容分发
+
+在DNS的协助下，无论是对用户还是服务器，内容分发网络都是完全透明的，在两者都不知情的情况下，由CDN的缓存节点接管了用户向服务器发出的资源请求。随之而来的问题是缓存节点中必须有用户想要请求的资源副本，才能代替源站来响应用户请求。这里又包含两个子问题：“如何获取源站资源”和“如何管理（更新）资源”。
+
+目前有以下两种主流的内容分发方式：
+
+- **主动分发**（Push）：分发由源站发起，将内容从源站或者其他资源库推送到用户边缘的各个CDN缓存节点上。由于主动分发通常需要源站、CDN服务双方提供程序API接口层面的配合，所以它对源站并不是透明的。主动分发一般用于网站要预载大量资源的场景。
+- **被动回源**（Pull）：被动回源是由用户访问所触发全自动、双向透明的资源缓存过程。当某资源首次被用户请求时，CDN节点发现自己没有该资源，就会实时从源站获取，此时资源的响应时间可粗略认为是资源从源站到CDN缓存节点的时间，再加上资源从CDN发送到用户的时间之和。被动回源的首次访问通常是比较慢的，不适合应用于数据量比较大的资源。优点是可做到双向透明。
+
+对于“CDN 如何管理（更新）资源”这个问题，同样没有统一的标准可言，尽管在 HTTP 协议中，关于缓存的 Header 定义中确实是有对 CDN 这类共享缓存的一些指引性参数，譬如 `Cache-Control` 的 `s-maxage`，但是否要遵循，完全取决于 CDN 本身的实现策略。且由于大多数网站的开发和运维人员并不十分了解 HTTP 缓存机制，所以导致如果 CDN 完全照着 HTTP `Headers` 来控制缓存失效和更新，效果反而会相当的差。
 
 ### 负载均衡（Load Balancing）
 
