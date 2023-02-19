@@ -44,13 +44,9 @@ Java语言在跨平台方面也做了一些努力，这些努力被定义在Java
 
 举一个例子，对于 `int` 类型，Java中固定占4个字节。但是在C\+\+中却不是固定的。在16位计算机上，int类型的长度可能为2字节；在32位计算机上，int类型的长度可能为4字节；当64位计算机流行起来后，int类型的长度可能会达到8字节。
 
-# 2. Bytecode
+# 2. Bytecode in Java
 
-
-
-# 3. Bytecode in Java
-
-> The following is quoted from https://en.wikipedia.org/wiki/Java_bytecode and https://dzone.com/articles/introduction-to-java-bytecode
+> A part of the following is quoted from  https://dzone.com/articles/introduction-to-java-bytecode
 
 ## What is Java Bytecode?
 
