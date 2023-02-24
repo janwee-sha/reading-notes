@@ -1,3 +1,5 @@
+> 摘抄自[周志明.深入理解Java虚拟机：JVM高级特性与最佳实践（第3版）北京华章图文信息有限公司.Kindle 版本](https://www.amazon.cn/dp/B082PTTSNB/ref=sr_1_1?crid=117XJLCB8Y06O&keywords=%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3java%E8%99%9A%E6%8B%9F%E6%9C%BA&qid=1677240608&s=digital-text&sprefix=%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%2Cdigital-text%2C104&sr=1-1)
+
 # 1. 走近Java
 
 ## 1.2 Java技术体系
@@ -338,6 +340,174 @@ Java虚拟机把描述类的数据从Class文件加载到内存，并对数据�
 
 一个类型从被加载到虚拟机内存中开始，到卸载出内存为止，它的整个生命周期将会经历加载（Loading）、验证（Verification）、准备（Preparation）、解析（Resolution）、初始化（Initialization）、使用（Using）和卸载七个阶段，其中验证、准备、解析三个阶段统称为连接（Linking）。
 
+# 10 前端编译与优化
+
+## 10.1 概述
+
+- 前端编译：把 `*.java` 文件转变成 `*.class` 文件的过程；
+- 即时编译（Just in Time Compilation）：运行期把字节码转变为本地机器码的过程；
+- 静态的提前编译（Ahead of Time Compilation）：直接把程序编译成与目标机器指令集相关的二进制代码的过程。
+
+## 10.2 `Javac` 编译器
+
+`Javac`编译器不像HotSpot虚拟机那样使用C++语言实现，它本身就是由Java语言编写。
+
+### 10.2.1 Javac的源码与调试
+
+《Java虚拟机规范》对如何把Java源码编译为Class文件描述得相当宽松。使得Class文件的编译过程在某种程度上是与具体的JDK或编译器实现相关的。
+
+`Javac` 的编译过程如下所示：
+
+1. 准备过程：初始化插入式注解器
+2. 解析与填充符号表过程，包括：
+    - 词法、语法分析。将源代码的字符流转变为标记集合，构造出抽象语法树。
+    - 填充符号表。产生符号地址和符号信息。
+3. 插入式注解处理器的注解处理过程：插入时注解处理器的执行阶段。
+4. 分析与字节码生成过程，包括：
+    - 标注检查。对语法的静态信息进行检查。
+    - 数据流及控制流分析。对程序动态运行过程进行检查。
+    - 解语法糖。将简化代码变法的语法糖还原为原有的格式。
+    - 字节码生成。将前述各步骤所产生的信息转换为字节码。
+
+执行插入式注解时又可能会产生新的符号，若有新符号产生，就必须转回到之前的解析、填充符号表的过程中重新处理这些新符号。处理过程的交互顺序如图：
+
+```
+[类文件]--->[解析与填充符号表]--->[注解处理]--->[分析与字节码生成]--->[字节码]
+         ^                                   |
+         |                                   |
+         +-----------------------------------+
+```
+
+上述处理到OpenJDK中的 `JavaCompiler` 类的源码中如下：
+
+```
+public void compile(List<JavaFileObject> sourceFileObjects,
+                        List<String> classnames,
+                        Iterable<? extends Processor> processors) {
+    ...
+    initProcessAnnotations(processors); //准备过程：初始化插入式注解处理器
+    
+    delegateCompiler =
+        processAnnotations( //过程2：执行注解处理
+            enterTrees(stopIfError(CompileState.PARSE, //过程1.2： 输入到符号表
+                parseFiles(sourceFileObjects))), //过程1.1：词法分析、语法分析
+            classnames);
+    
+    delegateCompiler.compile2();  //过程3：分析及字节码生成
+    ...
+}
+
+private void compile2() {
+    ...
+    case BY_TODO:
+        while (!todo.isEmpty())
+            generate(  //过程3.4：生成字节码
+                desugar(  //过程3.3：解语法糖
+                    flow(  //过程3.2：数据流分析
+                        attribute(todo.remove()))));  //过程3.1：标注
+        break;
+    ...
+}
+```
+
+<To be continued>
+
+# 11 后端编译
+
+## 11.1 概述
+
+若把字节码看作是程序语言的一种中间表示形式（Intermediate Representation，IR）的话，那编译器无论在何时、在何种状态下把Class文件转换成与本地基础设施（硬件指令集、操作系统）相关的二进制机器码，它都可以视为整个编译过程的后端。
+
+后端编译包括提前编译和即时编译。
+
+## 11.2 即时编译器
+
+目前主流的两款商用Java虚拟机（HotSpot、OpenJ9）里，Java程序最初都是通过解释器（Interpreter）进行解释执行的，当虚拟机发现某方法或代码块的运行特别频繁，就会把这些代码认定为热点代码（Hot Spot Code），为提高热点代码的执行效率，在运行时，虚拟机会把这些代码编译成本地机器码，运行时完成这个任务的后端编译器称作即时编译器。
+
+### 11.2.1 解释器与编译器
+
+尽管并不是所有的Java虚拟机都采用解释器与编译器并存的运行架构，但目前主流的商用Java虚拟机，譬如HotSpot、OpenJ9等，内部都同时包含解释器与编译器。
+
+解释器和编译器各有长处：
+
+- 程序需要迅速启动和执行的时候，解释器可以首先发挥作用，省去编译时间，立即运行。
+- 程序启动后，随着时间的推移，编译器主键发挥作用，把越来越多的代码编译成本地代码，这样可以减少解释器的中间损耗，获得更高的执行效率。
+- 解释器可节约内存，编译器可以提高执行效率。
+- 解释器可以作为编译器激进优化时后背的“逃生门”。
+
+![image](https://github.com/janwee-sha/reading-notes/blob/main/Java/images/Jvm.in.Depth.Figure.11.1.png)
+
+HotSpot虚拟机中内置了两个（或三个）即时编译器，其中有两个编译器存在已久，分别被称为“客户端编译器”（ Client Compiler）和“服务端编译器”（Server Compiler），或者简称为C1编译器和C2编译器，第三个是在JDK 10时才出现的、长期目标是代替C2的Graal编译器。
+
+JVM参数：
+
+- `-client`：客户端模式
+- `-server`：服务端模式
+- `-Xint`：解释模式
+- `-Xcomp`：编译模式
+
+虚拟机执行模式：
+
+```
+$ java -version
+java version "1.8.0_92"
+Java(TM) SE Runtime Environment (build 1.8.0_92-b14)
+Java HotSpot(TM) 64-Bit Server VM (build 25.92-b14, mixed mode)
+
+$ java -Xint -version
+java version "1.8.0_92"
+Java(TM) SE Runtime Environment (build 1.8.0_92-b14)
+Java HotSpot(TM) 64-Bit Server VM (build 25.92-b14, interpreted mode)
+
+$ java -Xcomp -version
+java version "1.8.0_92"
+Java(TM) SE Runtime Environment (build 1.8.0_92-b14)
+Java HotSpot(TM) 64-Bit Server VM (build 25.92-b14, compiled mode)
+```
+
+由于即时编译器编译本地代码需要占用程序运行时间，通常要编译出优化程度越高的代码，花费的时间便会越长；且想要编译出优化成都更高的代码，解释器可能还要提编译器收集性能监控信息，这对解释执行阶段的速度也有所影响。
+
+为了在程序启动响应速度与运行效率间达到最佳平衡，HotSpot虚拟机在编译子系统中加入了分层编译的功能，包括：
+
+- 第0层。程序纯解释执行，且解释器不开启性能监控功能。
+- 第1层。使用客户端编译器将字节码编译成本地代码来运行，进行简单可靠的稳定优化，不开启性能监控功能。
+- 第2层。仍然使用客户端编译器执行，仅开启方法及回边次数统计等有限的性能监控功能。
+- 第3层。仍然使用客户端编译器执行，开启全部性能监控，除第上述统计信息外，还会收集分支跳转、虚方法调用版本等。
+- 第4层。使用服务都安编译器将字节码编译为本地代码，相比客户端编译器，服务都安编译器会启用更多的编译耗时更长的优化，还会根据性能监控信息进行一些不可靠的激进优化。
+
+实施分层编译后，解释器、客户端编译器和服务端编译器就会同时工作，热点代码都可能会被多次编译。
+
+### 11.2.2 编译对象与触发条件
+
+热点代码主要有两类：
+
+- 被多次调用的方法。
+- 被多次执行的循环体。
+
+<To be continued>
+
+## 11.3 提前编译器
+
+如IBM High Performance Compiler for Java、GCJ等提前编译器都曾被广泛使用。
+
+但是提前编译很快又在Java世界里沉寂了下来，因为当时Java的一个核心优势是平台中立。这种2013年，使用提前编译的ART（Android Runtime）被发布。
+
+### 11.3.1 提前编译的优劣得失
+
+实现提前编译的两种思路：
+
+1. **静态提前编译**——在程序运行前把程序代码编译成机器码的静态翻译工作（类似传统C、C++编译器）；
+    
+    这种方式不存在即时编译占用程序运行时间和运算资源的劣势。
+
+2. **动态提前编译**——把原本即时编译器在运行时要做的编译工作提前做好并保存下来，下次运行到这些代码时直接把它加载进来使用。
+    
+    这种方式的本质上时给即时编译器做缓存加速，去改善Java程序的启动时间，以及需要一段时间预热后才能达到最高性能的问题。这种提前编译被称为动态提前编译（Dynamic AOT）或即时编译缓存（JIT Caching）。
+
+目前的Java技术体系里，动态提前编译已经完全被主流的商用JDK支持。
+
+<To be continued>
+
 # 12 Java内存模型与线程
 
 ## 12.1 概述
@@ -404,4 +574,4 @@ Java内存模型要求 `lock`、`unlock`、`read`、`load`、`assign`、`use`、
 
 若有多个线程共享一个并未声明为 `volatile` 的 `long` 和 `double` 类型的变量，且同时对它们进行读取和修改操作，那么某些线程可能会读取到一个既不是原值，也不是其他线程修改值的代表了“半个变量”的数值。
 
-不过这种“半个变量”的情况随着主流Java虚拟机的迭代而非常罕见了。因此实际开发一般不需要因为这个原因可以把用到的 `long` 和 `double` 变量声明位 `volatile`。
+不过这种“半个变量”的情况随着主流Java虚拟机的迭代而非常罕见了。因此实际开发一般不需要因为这个原因可以把用到的 `long` 和 `double` 变量声明为 `volatile`。
