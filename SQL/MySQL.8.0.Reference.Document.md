@@ -111,3 +111,44 @@ PURGE MASTER LOGS TO '2019-12-20 15:00:00";
 mysqlbinlog <file> | mysql -u root -p
 ```
 以上命令可以理解成，先使用 `mysqlbinlog` 命令来读取 <file> 中的内容，再使用 `mysql` 命令将这些内容还原到数据库中。
+
+### 17.4.1 Replication Solutions
+
+#### 17.4.1.3 Backing Up a Source or Replica by Making It Read Only
+
+We can back up servers in a replication setup by acquiring a global read lock and manipulating the `read_only` system variable to change the *read-only* state of the server to be backed up:
+
+1. Make the server *read-only*, so that it processes only retrievals and blocks updates.
+
+2. Perform the backup.
+
+3. Change the server back to its normal read/write state.
+
+**Scenario 1: Backup with a Read-Only Source**
+
+Put the source in a *read-only* state by executing these statements on it:
+
+```
+mysql> FLUSH TABLES WITH READ LOCK;
+mysql> SET GLOBAL read_only = ON;
+```
+
+After the backup operation on the source server completes, restore the source server to its normal operational state by executing these statements:
+
+```
+mysql> SET GLOBAL read_only = OFF;
+mysql> UNLOCK TABLES;
+```
+
+Although performing the backup on the source server is safe (as far as the backup is concerned), it is not optimal for performance because clients of the source server are blocked from executing updates.
+
+This strategy applies to backing up a source in a replication setup, but can also be used for a single server in a nonreplication setting.
+
+**Scenario 2: Backup with a Read-Only Replica**
+
+While a replica is in a read-only state, the following properties are true:
+
+- The source of the replica continues to operate, so making a backup on the source is not safe.
+- The replica is stopped, so making a backup on the replica is safe.
+
+After the replica is restored to normal operation, it again synchronizes to the source by catching up with any outstanding updates from the source's binary log.
