@@ -24,7 +24,7 @@ JCP官方所定义的Java技术体系包括以下部分：
 
 Java虚拟机的运行时数据区：
 
-![image](https://github.com/janwee-sha/reading-notes/blob/main/Java/images/JVM.in.Depth.Figure.2.1.png)
+![image](https://github.com/janwee-sha/reading-notes/blob/main/Java/images/JVM.in.Depth/Figure.2.1.png)
 
 ### 2.2.1 程序计数器
 
@@ -107,11 +107,11 @@ JDK 1.4中加入的NIO（New Input/Output）类，引入了一种基于通道（
 
 - **句柄访问**。Java堆中可能会划分出一块内存来作为句柄池，reference中存储的是对象的句柄地址，句柄中包含了对象实例数据与类型数据各自具体的地址信息。
 
-![image](https://github.com/janwee-sha/reading-notes/blob/main/Java/images/JVM.in.Depth.Figure.2.2.png)
+![image](https://github.com/janwee-sha/reading-notes/blob/main/Java/images/JVM.in.Depth/Figure.2.2.png)
 
 - **直接指针访问**。Java堆中对象的内存布局就必须考虑如何放置访问类型数据的相关信息，reference中存储的直接就是对象地址。
 
-![image](https://github.com/janwee-sha/reading-notes/blob/main/Java/images/JVM.in.Depth.Figure.2.3.png)
+![image](https://github.com/janwee-sha/reading-notes/blob/main/Java/images/JVM.in.Depth/Figure.2.3.png)
 
 句柄访问的优势是reference中存储的是稳定句柄地址，在对象被移动时只会改变句柄中的实例数据指针，而reference本身不需要被修改。
 
@@ -435,7 +435,7 @@ private void compile2() {
 - 解释器可节约内存，编译器可以提高执行效率。
 - 解释器可以作为编译器激进优化时后背的“逃生门”。
 
-![image](https://github.com/janwee-sha/reading-notes/blob/main/Java/images/JVM.in.Depth.Figure.11.1.png)
+![image](https://github.com/janwee-sha/reading-notes/blob/main/Java/images/JVM.in.Depth/Figure.11.1.png)
 
 HotSpot虚拟机中内置了两个（或三个）即时编译器，其中有两个编译器存在已久，分别被称为“客户端编译器”（ Client Compiler）和“服务端编译器”（Server Compiler），或者简称为C1编译器和C2编译器，第三个是在JDK 10时才出现的、长期目标是代替C2的Graal编译器。
 
