@@ -30,8 +30,15 @@ Java异常层次结构的一个简化示意图：
 	E(RuntimeException) --> C
 	B --> A(Throwable)
 	C --> A
+	style A fill:#4169E1,stroke:#333,stroke-width:4px;
+	style B fill:#A020F0,stroke:#333,stroke-width:4px;
+	style C fill:#458B74,stroke:#333,stroke-width:4px;
+	style D fill:##000000,stroke:#333,stroke-width:4px;
+	style E fill:#B22222,stroke:#333,stroke-width:4px;
+	style G fill:#696969,stroke:#333,stroke-width:4px;
+	style I fill:#696969,stroke:#333,stroke-width:4px;
+	style J fill:#696969,stroke:#333,stroke-width:4px;
 ```
-
 
 Error类层次结构描述了Java运行时系统的内部错误和资源耗尽错误。应用程序不应该抛出这种类型的异常。若出现了这样的内部错误，除了通告给用户，并尽力使程序安全地终止之外，再也无能为力了。
 
@@ -234,14 +241,48 @@ The sorting of a tree set is accomplished by a tree data structure.(The current 
 
 Adding a element to a tree is slower than adding it to a hash table. But it is still much faster than checking for duplicate in an array or linked list. 
 
+> **Note**: As of Java 6, the `TreeSet` class implements the `NavigableSet` interface. That interface adds serval convenient methods for locating elements and for backward traversal.
 
-| API: java.util.NavigableSet<E> 6 |
-| --- |
-| \* E higher (E value)<br>\* E lower (E value)<br>returns the least *element* > *value* or the largest *element* < *value*, or null if there is no such element. |
-| \* E ceiling (E value)<br>\* E floor (E value)<br>returns the least *element* >= *value* or the largest *element* <= *value*, or null if there is no such element. |
-| \* Iterator<E> descendingIterator()<br>return an iterator that traverses this set in descending direction|
+| API | java.util.SortedSet<E> |
+| --- | --- |
+| `Comparator<? super E> comparator()` | returns the comparator used for sorting the elements, or `null` if the elements are compared with the<br> `compareTo` method of the `Comparable` interface. |
+| `E first()`<br>`E last()` | returns the smallest or largest element in the sorted set.|
+
+| API | java.util.NavigableSet<E> 6 |
+| --- | --- |
+| `E higher (E value)`<br> `E lower (E value)` | returns the least element `> value` or the largest element `< value`, or `null` if there is no such element. |
+| `E ceiling (E value)`<br>`E floor (E value)` | returns the least element `>= value` or the largest element `<= value`, or `null` if there is no such element. |
+| `Iterator<E> descendingIterator()` | return an iterator that traverses this set in descending direction|
 
 [Here](https://github.com/janwee-sha/java-in-practice/blob/main/src/main/java/collection/test/TreeSetTest.java) are some codes that test a tree set.
+
+#### 9.2.5 Queue and Deque
+
+
+| API | java.util.Queue<E> 5.0 |
+| --- | --- |
+| `boolean add(E element)` | 若队列未满，添加元素到队列尾部并返回 `true`；否则抛出 `IllegalStateException`。 |
+| `boolean offer(E element)` | 若队列未满，添加元素到队列尾部并返回 `true`；否则返回 `false`。 |
+| `E remove()` | 若队列不空，删除并返回队列头部元素；否则抛出 `NoSuchElementException`。 |
+| `E poll()` | 若队列不空，删除并返回队列头部元素；否则返回 `null`。 |
+
+| API | java.util.Deque<E> 6|
+| --- | --- |
+| `void addFirst(E element)`<br>`void addLast(E element)`<br> `void addFirst(E element)`<br>`void addLast(E element)`| 向队头或队尾添加元素。若队列满了，前两者抛出 `IllegalStateException`，后两者返回 `false`。 |
+| `void removeFirst(E element)`<br>`void removeLast(E element)`<br> `void pollFirst(E element)`<br>`void pollLast(E element)`| 删除并返回队头或队尾元素。若队列为空，前两者抛出 `NoSuchElementException`，后两者返回 `null`。 |
+| `void getFirst(E element)`<br>`void getLast(E element)`<br> `void peekFirst(E element)`<br>`void peekLast(E element)`| 返回队头或队尾元素。若队列为空，前两者抛出 `NoSuchElementException`，后两者返回 `null`。 |
+
+| API | java.util.Deque<E> 6 |
+| --- | --- |
+| `ArrayDeque ()`<br>`ArrayDeque (int initialCapacity)` | 用初始容量16或给定的初始容量构造一个无限双端队列 |
+
+### 9.3 Maps
+
+#### 9.3.4 弱散列映射
+
+设计 `WeakHashMap` 类是为了解决一个有趣的问题。如果某个键的最后一次引用已经消亡，不再有任何途径引用这个值的对象了。
+
+<To be continued>
 
 ## 14 Concurrency
 
@@ -251,19 +292,19 @@ Adding a element to a tree is slower than adding it to a hash table. But it is s
 
 ### 14.1 What are Threads
 
-直接调用Thread类或Runnable对象的run方法，只会执行同一个线程中的任务，而不会启动新线程。调用Thread.start方法将创建一个执行run方法的新线程。
+直接调用 `Thread` 类或 `Runnable` 对象的 `run` 方法，只会执行同一个线程中的任务，而不会启动新线程。调用 `Thread.start` 方法将创建一个执行 `run` 方法的新线程。
 
 ### 14.2 Interrupting Threads
 
-Java早期版本中的Thread.stop方法可以用来终止线程，但该方法现在已经被弃用了。
+Java早期版本中的 `Thread.stop` 方法可以用来终止线程，但该方法现在已经被弃用了。
 
-当对一个线程调用interrupt方法时，线程的中断状态将被置位。每个线程都应该不时地检查这个标志，以判断线程是否被中断。
+当对一个线程调用 `interrupt` 方法时，线程的中断状态将被置位。每个线程都应该不时地检查这个标志，以判断线程是否被中断。
 
-使用isInterrupted方法判断一个线程是否被置位。
+使用 `isInterrupted` 方法判断一个线程是否被置位。
 
-被阻塞的线程就无法检测中断状态。当在一个被阻塞的线程上调用interrupt方法时，阻塞调用将会被Interrupted Exception异常中断。
+被阻塞的线程就无法检测中断状态。当在一个被阻塞的线程上调用 `interrupt` 方法时，阻塞调用将会被 `InterruptedException` 异常中断。
 
-没有任何语言方面的需求要求一个被中断的线程应该终止。中断一个线程不过是引起它的注意。被中断的线程可以决定如何响应中断。线程简单地将中断作为一个终止请求时run方法具有如下形式：
+没有任何语言方面的需求要求一个被中断的线程应该终止。中断一个线程不过是引起它的注意。被中断的线程可以决定如何响应中断。线程简单地将中断作为一个终止请求时 `run` 方法具有如下形式：
 
 ```
 Runnable r = () -> {
@@ -281,9 +322,9 @@ Runnable r = () -> {
 };
 ```
 
-如果中断状态被置位时调用sleep方法不会休眠线程，相反，它将清楚这一状态并抛出InterruptedException。
+如果中断状态被置位时调用 `sleep` 方法不会休眠线程，相反，它将清除这一状态并抛出 `InterruptedException`。
 
-interrupted是一个静态方法，它检测当前的线程是否被中断并清除该线程的中断状态；isInterrupted是一个实例方法，可用来检测线程是否被中断且不会改变中断状态。
+`interrupted` 是一个静态方法，它检测当前的线程是否被中断并清除该线程的中断状态；`isInterrupted` 是一个实例方法，可用来检测线程是否被中断且不会改变中断状态。
 
 ### 14.3 Thread States
 
@@ -298,21 +339,21 @@ interrupted是一个静态方法，它检测当前的线程是否被中断并清
 
 #### 14.3.1 New Threads
 
-当用new操作符创建一个新线程时，该线程还没有开始运行，此时线程处于新创建状态。
+当用 `new` 操作符创建一个新线程时，该线程还没有开始运行，此时线程处于新创建状态。
 
 #### 14.3.2 Runnable Threads
 
-一旦调用start方法，线程处于runnable状态。一个可运行的线程可能正在云南行也可能没有运行，这取决于操作系统给线程提供运行的时间。
+一旦调用 `start` 方法，线程处于 `runnable` 状态。一个可运行的线程可能正在运行也可能没有运行，这取决于操作系统给线程提供运行的时间。
 
 一旦一个线程开始运行，它不必始终保持运行。抢占式调度系统给每一个可运行线程一个时间片来执行任务。
 
-现在所有的桌面以及服务器操作系统都是用抢占式调度。但是，像手机这样的小型设备可能使用协作式调度。在这样的设备中，一个线程只有在调用yield方法，或者被阻塞或等待时，线程才失去控制权。
+现在所有的桌面以及服务器操作系统都是用抢占式调度。但是，像手机这样的小型设备可能使用协作式调度。在这样的设备中，一个线程只有在调用 `yield` 方法，或者被阻塞或等待时，线程才失去控制权。
 
 #### 14.3.3 Blocked and Waiting Threads
 
 当线程处于被阻塞或等待状态时，它暂时不活动。它不运行任何且消耗最少的资源。
 
-- 当一个线程试图获取一个内部的对象锁（而不是java.util.concurrent库中的锁），而该锁被其他线程持有，则该线程进入阻塞状态。当所有其他线程释放该锁，并且线程调度器允许本线程持有它的时候，该线程将编程非阻塞状态。
+- 当一个线程试图获取一个内部的对象锁（而不是 *java.util.concurrent* 库中的锁），而该锁被其他线程持有，则该线程进入阻塞状态。当所有其他线程释放该锁，并且线程调度器允许本线程持有它的时候，该线程将编程非阻塞状态。
 - 当线程等待另一个线程通知调度器一个条件时，它自己进入等待状态。在调用Object.wait方法或Thread.join方法，或者是等待java.util.concurrent库中的Lock或Condition时，就会出现这种情况。实际上，被阻塞状态与等待状态是有很大不同的。
 - 有几个方法有一个超时参数。调用它们导致线程进入计时等待（timed waiting）状态。这一状态将一直保持到超时期满或者接收适当的通知。
 
@@ -469,13 +510,28 @@ public void flipDone() {done=!done;}
 
 #### 14.5.12 Thread-Local Variables
 
-线程间共享变量存在风险。有时可能要避免共享变量，使用ThreadLocal辅助类为各个线程提供各自的实例。
+线程间共享变量存在风险。有时可能要避免共享变量，使用 `ThreadLocal` 辅助类为各个线程提供各自的实例。
 
-ThreadLocal叫做线程变量，该变量对其他线程而言是隔离的，亦即该变量是当前线程独有的变量。ThreadLocal为变量在每个线程都创建了一个副本。
+要为每个线程构造一个实例，可以使用以下代码：
 
-ThreadLocal提供了线程本地的实例。它与普通变量的区别在于，每个使用该变量的线程都会初始化一个完全独立的副本。ThreadLocal变量通常被private static修饰。当一个线程结束时，它所使用的说有ThreadLocal对应的实例副本都可被回收。
+```
+public static final ThreadLocal<SimpleDateFormat> dateFormat = 
+    ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd"));
+```
 
-ThreadLocal与synchronized的区别在于，synchronized用于线程间的数据共享，而ThreadLocal用于线程间的数据隔离。
+要访问具体的实例，可以调用：
+
+```
+dateFormat.get();
+```
+
+在一个给定线程中首次调用 `get` 时，会调用 `initialValue` 方法。然后，`get` 方法会返回属于当前线程的那个实例。
+
+`ThreadLocal` 叫做线程变量，该变量对其他线程而言是隔离的，亦即该变量是当前线程独有的变量。`ThreadLocal` 为变量在每个线程都创建了一个副本。
+
+`ThreadLocal` 提供了线程本地的实例。它与普通变量的区别在于，每个使用该变量的线程都会初始化一个完全独立的副本。`ThreadLocal` 变量通常被 `private static` 修饰。当一个线程结束时，它所使用的所有 `ThreadLocal` 对应的实例副本都可被回收。
+
+`ThreadLocal` 与 `synchronized` 的区别在于，`synchronized` 用于线程间的数据共享，而 `ThreadLocal` 用于线程间的数据隔离。
 
 #### 14.5.14 Read/Write Locks
 
@@ -556,6 +612,8 @@ interface Future<V> {
 
 FutureTask包装器是一种非常便利的机制，可将Callable转换成Future和Runnable，它同时实现二者的接口。
 
+### 14.9 
+
 # Volume II
 
 ## Chapter 1. Streams
@@ -595,13 +653,6 @@ yields a stream whose elements are the specified range of the array.
 > - static Stream<String> lines(Path path) 8
 > - static Stream<String> lines(Path path, Charset cs)8
 > yields a stream whose elements are the lines of the specified file, with the UTF-8 charset or the given charset.
-
-
-
-
-
-
-
 
 ## Chapter 2. Input and Output
 

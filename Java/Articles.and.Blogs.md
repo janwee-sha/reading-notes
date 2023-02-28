@@ -670,3 +670,35 @@ For example, setting -XX:GCTimeRatio=9 means that 10% of the application’s wor
 By default, the value of `-XX:GCTimeRatio` flag is set to 99 by the JVM.
 
 <To be continued>
+
+# 6. Interpreter vs Compiler
+
+> Quoted from https://www.guru99.com/difference-compiler-vs-interpreter.html
+
+## Key Difference between Compiler and Interpreter
+
+- Compiler transforms code written in a high-level programming language into the machine code at once before the program runs, whereas an Interpreter converts each high-level program statement, one by one, into the machine code, during program run.
+- Compiled code runs faster, while interpreted code runs slower.
+- Compiler displays all errors after compilation, on the other hand, the Interpreter displays errors of each line one by one.
+- Compiler is based on translation linking-loading model, whereas the Interpreter is based on Interpretation Method.
+- Compiler takes an entire program, whereas the Interpreter takes a single line of code.
+
+**How Compiler Works**
+```
+flowchart LR
+    A[Source Code] --> B{{Compiler}} --> C(Machine Code) --> D([ Output ])
+    style A fill:#696969,stroke:#333,stroke-width:4px;
+    style B fill:#A020F0,stroke:#333,stroke-width:4px;
+    style C fill:#458B74,stroke:#333,stroke-width:4px;
+    style D fill:##000000,stroke:#333,stroke-width:4px;
+```
+
+**How Interpreter Works**
+
+```
+flowchart LR
+    A[Source Code] --> B{{Interpreter}} --> C([Output])
+    style A fill:#696969,stroke:#333,stroke-width:4px;
+    style B fill:#A020F0,stroke:#333,stroke-width:4px;
+    style C fill:##000000,stroke:#333,stroke-width:4px;
+```
