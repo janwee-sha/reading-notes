@@ -900,4 +900,514 @@ The `egrep` command is an offshoot of `grep`, which alows you to specify POSIX e
 
 ## 5.1 Investing Shell Types
 
+==TBC==
+
+# 6 Linux环境变量
+
+## 6.5 设置 `PATH` 环境变量
+
+```
+$ echo $PATH
+/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games
+$ PATH=$PATH:/root
+$ echo $PATH
+/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/root
+```
+## 6.6 定位系统环境变量
+
+启动bash shell有以下3种方式：
+
+- 登录时作为默认shell。
+- 作为交互式shell，通过生成子shell启动。
+- 作为运行脚本的非交互式shell。
+
+### 6.6.1 登录shell
+
+登录shell会从几个不同的启动文件种读取命令，通常包括：
+
+- /etc/profile
+- $HOME/.bash_profile
+- $HOME/.bashrc
+- $HOME/.bash_login
+- $HOME/.profile
+
+**1. /etc/profile文件**
+
+/etc/profile文件时bash shell默认的主启动文件。
+
+
+
+# 7. Understanding Linux File Permissions
+
+## 7.1 Exploring the Linux Security
+
+The core of the Linux security is the *user account*.
+
+### 7.1.1 The */etc/passwd* file
+
+```
+$ cat /etc/passwd
+root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+...
+janwee:x:1000:1000:janwee,,,:/home/janwee:/bin/bash
+systemd-coredump:x:999:999:systemd Core Dumper:/:/usr/sbin/nologin
+```
+
+该文件各个字段的含义：
+
+- 登录用户名
+- 用户密码
+- 用户账户的UID
+- 用户账户的组ID
+- 用户账户的文本描述
+- 用户 `$HOME` 目录的位置
+- 用户的默认shell
+
+### 7.1.2 The */etc/shadow* file
+
+绝大多数Linux系统将用户密码保存在单独的 */etc/shadow* 文件中。
+
+```
+# cat /etc/shadow | grep janwee
+janwee:$1$tuiga5ml$rjAuW.6jgg/0KJDbaLHnZ0:18556:0:99999:7:::
+```
+
+/etc/shadow 文件中每条记录共包含9个字段。
+
+- 登录名
+- 加密后的密码自上次修改密码后已经过去的天数
+- 多少天后才能更改密码
+- 密码过期前提前多少天提醒用户更改密码
+- 密码过期后多少天禁用用户账户
+- 用户账户被禁用的日期
+- 预留给以后使用的字段
+
+### 7.1.3 Adding a new user
+
 <To be continued>
+
+### 7.1.4 Removing a user
+
+<To be continued>
+
+### 7.1.5 Modifying a user
+
+<To be continued>
+
+## 7.3 理解文件权限
+
+### 7.3.1 使用文件权限符号
+
+```
+$ ls -l
+total 44
+drwxr-xr-x 3 root             root 4096 Feb 10 22:14 1_softwares
+drwxr-xr-x 2 root             root 4096 Aug  1  2020 src
+```
+
+输出结果的第一个字段是描述文件和目录权限的编码。第一个字符表示对象的类型：
+
+
+| 值 | - | d | l | c | b | p | s |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 描述 | 文件 | 目录 | 链接 | 字符设备 | 块设备 | 具名管道 | 网络套接字 |
+
+之后是3组三字符的编码。每一组定义了3种访问权限。3组权限分别对应对象的3个安全级别：
+
+- 对象的属主
+- 对象的属组
+- 系统其他用户
+
+### 7.3.2 默认文件权限
+
+`umask`命令可用于显示和设置默认权限：
+
+```
+$ umask
+0022
+$ touch newfile
+$ ls -al newfile
+-rw-r--r-- 1 root root 0 Mar  1 16:26 newfile
+```
+
+第一个数位代表一项特别的安全特性。接下来的3个数位表示文件或目录对应的`umask`八进制值。
+
+八进制模式的安全设置先获取rwx权限值，然后将其转换为3位二进制值，用一个八进制来表示。
+
+例如，若读权限是唯一置位的权限，则权限值是 `r--`，转换为二进制值就是100，代表的八进制值是4。
+
+`umask`实际值只是个掩码，它会屏蔽掉不想授予该安全级别的权限。
+
+要把`umask`值从对象的全权限值种减掉。文件的全权限值是666（所有用户都有读取和写入的权限），目录的全权限值是777（所有用户都有读取、写入和执行的权限）。
+
+所以上述例子中文件一开始的权限是666，减去umask值022之后，剩下的文件权限就成了744。
+
+指定其他的umask默认值：
+
+```
+$ umask 026
+$ touch newfile2
+$ ls -al newfile2
+-rw-r----- 1 root root 0 Mar  1 16:26 newfile2
+```
+
+## 7.4 更改安全设置
+
+### 7.4.1 修改权限
+
+- `chmod`
+
+```
+chmod [OPTION]... MODE[,MODE]... FILE...
+  or:  chmod [OPTION]... OCTAL-MODE FILE...
+  or:  chmod [OPTION]... --reference=RFILE FILE...
+```
+
+`mode` 参数允许使用八进制模式或符号模式来进行安全设置。
+
+```
+$ chmod 760 newfile
+$ ls -l newfile
+-rwxrw---- 1 root root 0 Mar  1 16:26 newfile
+```
+
+下面是在符号模式下指定权限的格式：
+
+```
+[ugoa]*([-+=]([rwxXst]*|[ugo]))+|[-+=][0-7]+
+```
+第一组字符含义：
+
+- u代表属主用户
+- g代表属组用户
+- o代表其他用户
+- a代表以上所有
+
+第二组字符含义：
+
+- +代表在现有基础上增加权限
+- -代表移除权限
+- =代表设置权限
+
+第三组字符含义：
+
+- X：仅当对象是目录或者已有执行权限时才赋予执行权限。
+- s：在执行时设置SUID或SGID。
+- t：设置沾滞位。
+- u：设置属主权限。
+- g：设置属组权限。
+- o：设置其他用户权限。
+
+==TBC==
+
+# 11. 构建基础脚本
+
+## 11.2 创建Shell脚本
+
+在创建Shell脚本时，必须在文件第一行指定要使用的shell，格式如下：
+
+```
+#!/bin/bash
+```
+
+`PATH` 环境变量被设置为用于在其中查找命令的一系列目录。要让shell找到某个 shell 脚本，可以：
+
+- 将放置shell脚本文件的目录添加到 `PATH` 环境变量。
+- 在命令行中使用绝对路径或相对路径来引用 `shell` 脚本文件。
+
+如：
+
+```
+$ chmod u+x script1
+$ ls -l script1
+-rwxr--r-- 1 root root 23 Mar  2 01:23 script1
+$ ./script1
+```
+
+## 11.4 Using Variables
+
+### 11.4.1 Environment variables
+
+- `set` 命令：显示一份完整的当前环境变量列表。
+
+在脚本中，可以在环境变量名前加上 *$* 来引用这些环境变量，如：
+
+```
+#!/bin/bash
+echo "Current user is $USER"
+```
+
+### 11.4.2 User variables
+
+变量名区分大小写，长度不能超过20个字符，使用等号为变量赋值。
+
+```
+book="The Song of Ice and Fire"
+author="George R. R. Martin"
+```
+
+shell脚本中定义的变量在脚本整个生命周期一直保持它们的值，在脚本结束时会被删除。
+
+It’s important to remember that when referencing a variable value you use the dollar sign, but when referencing the variable to assign a value to it, you do not use the dollar sign. Here’s an example:
+
+```
+book="The Song of Ice and Fire"
+author="George R. R. Martin"
+output="$author 's $book"
+echo $output
+```
+
+And the output when executing this shell script will be:
+
+```
+George R. R. Martin 's The Song of Ice and Fire
+```
+
+### 11.4.3 Command substitution
+
+One of the most useful features of shell scripts is the ability to extract information from the output of a command and assign it to a variable. After you assign the output to a variable, you can use that value anywhere in your script. 
+
+Two ways to assign the output of a command to a variable:
+
+- The backtick character(`)
+- The `$()` format
+
+For example:
+
+```
+time=`date +%y%m%d`
+```
+
+or:
+
+```
+time=$(date +%y%m%d)
+```
+
+## 11.5 Redirecting Input and Output
+
+### 11.5.1 Output redirection
+
+- `command > outputfile`: sedning output from a command to a file.
+
+For example:
+
+```
+$ date > dates
+$ cat dates
+Fri 03 Mar 2023 05:17:41 AM GMT
+```
+
+- `command >> filename`: Append output from a command to an existing file. 
+
+For example:
+
+```
+$ date >> dates
+$ cat dates
+Fri 03 Mar 2023 05:17:41 AM GMT
+Fri 03 Mar 2023 05:22:35 AM GMT
+```
+
+### 11.5.2 Input direction
+
+- `command < inputfile`: Takes the content of a file and redirects it to a command.
+
+```
+$ wc < dates
+ 2 14 64
+```
+
+- `wc` command: Print newline, word, and byte counts for each FILE, and a total line if
+more than one FILE is specified.
+
+```
+command << marker
+data
+marker
+```
+Another method of input redirection is called inline input redirection. This method allows you to specify the data for input redirection on the command line instead of in a file. 
+
+```
+$ wc << EOF
+> 
+> test string 1
+> test string 2
+> EOF
+ 3  6 29
+```
+
+## 11.6 Pipes
+
+Sometimes, you need to send the output of one command to the input of another command. This is possible using redirection, but somewhat clunky:
+
+```
+$ ls > contents
+$ sort < contents
+client_config
+containers
+contents
+dates
+debug-2022-11-26.0.log
+```
+
+- `command1 | command2`:  Redirects the output to another 
+command. This process is called *piping*.
+
+For example:
+
+```
+$ ls | sort
+client_config
+containers
+contents
+dates
+debug-2022-11-26.0.log
+```
+
+The Linux system actually runs both commands at the same time, linking them together internally in the system.
+
+```
+$ ls --sort=time | sort | more
+[
+aa-enabled
+aa-exec
+addpart
+appres
+apt
+apt-cache
+```
+
+You can use redirection along with piping to save your output to a file:
+
+```
+$ ls --sort=time | sort > sorted.list
+```
+
+## 11.7 Performing Math
+
+- `expr` command:  Allowes the processing of equations from the command line.
+
+Usage: 
+
+```
+Usage: expr EXPRESSION
+  or:  expr OPTION
+
+      --help     display this help and exit
+      --version  output version information and exit
+
+Print the value of EXPRESSION to standard output.  A blank line below
+separates increasing precedence groups.  EXPRESSION may be:
+
+  ARG1 | ARG2       ARG1 if it is neither null nor 0, otherwise ARG2
+
+  ARG1 & ARG2       ARG1 if neither argument is null or 0, otherwise 0
+
+  ARG1 < ARG2       ARG1 is less than ARG2
+  ARG1 <= ARG2      ARG1 is less than or equal to ARG2
+  ARG1 = ARG2       ARG1 is equal to ARG2
+  ARG1 != ARG2      ARG1 is unequal to ARG2
+  ARG1 >= ARG2      ARG1 is greater than or equal to ARG2
+  ARG1 > ARG2       ARG1 is greater than ARG2
+
+  ARG1 + ARG2       arithmetic sum of ARG1 and ARG2
+  ARG1 - ARG2       arithmetic difference of ARG1 and ARG2
+
+  ARG1 * ARG2       arithmetic product of ARG1 and ARG2
+  ARG1 / ARG2       arithmetic quotient of ARG1 divided by ARG2
+  ARG1 % ARG2       arithmetic remainder of ARG1 divided by ARG2
+
+  STRING : REGEXP   anchored pattern match of REGEXP in STRING
+
+  match STRING REGEXP        same as STRING : REGEXP
+  substr STRING POS LENGTH   substring of STRING, POS counted from 1
+  index STRING CHARS         index in STRING where any CHARS is found, or 0
+  length STRING              length of STRING
+  + TOKEN                    interpret TOKEN as a string, even if it is a
+                               keyword like 'match' or an operator like '/'
+```
+
+```
+$ expr 200 % 3
+2
+```
+
+The bash shell mathematical operators support only integer arithmetic. This is a huge limitation if you’re trying to do any sort of real-world mathematical calculations.
+
+### 11.7.3 A floating-point solution
+
+**The basics of `bc`**
+
+- `bc`: The bach calculator, allows you to enter floating-point expressions at a command line and then interprets the expressions, calculates them, and returns the result.
+
+The bash calculator recognizes these:
+
+- Numbers (both integer and floating point)
+- Variables （both simple variables and arrays）
+- Comments (lines starting with a pound sign or the C language /* */ pair)
+- Expressions
+- Programming statements (such as if-then statements)
+- Functions
+
+```
+$ bc -q
+3.44 / 5
+0
+scale=4
+3.44 / 5
+.6880
+quit
+```
+
+**Using `bc` in scripts**
+
+The basic format:
+
+```
+variable=$(echo "options; expression" | bc)
+```
+
+For example:
+
+```
+#!/bin/bash
+ans=$(echo "scale=4; 3.44 / 5" | bc)
+echo The answer is $ans
+```
+
+The best method is to use inline input redirection, which allows you to redirect data directly from the command line. In the shell script, you assign the output to a variable:
+
+```
+variable=$(bc << EOF
+options
+statements
+expressions
+EOF)
+```
+
+For example:
+
+```
+#!/bin/bash
+
+var1=10.46
+var2=43.67
+var3=33.2
+var4=71
+
+var5=$(bc << EOF
+scale=4
+a=($var1 * $var2)
+b=($var3 * $var4)
+a1 + b1
+EOF
+)
+
+echo the final answer is $var5
+```
+
+## 11.8 Exiting the Script
+
+==TBC==
