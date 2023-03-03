@@ -1413,4 +1413,227 @@ echo the final answer is $var5
 
 ## 11.8 Exiting the Script
 
-==TBC==
+Every command that runs in the shell uses an exit status to indicate to the shell that it’s finished processing. The exit status is an integer value between 0 and 255 that’s passed by the command to the shell when the command fi nishes running. You can capture this value and use it in your scripts.
+
+### 11.8.1 Checking the exit status
+
+Linux provides the `$?` special variable that holds the exit status value from the last command that executed. You must view or use the $? variable immediately after the command you want to check. 
+
+```
+$ unknown_cmd
+unknown_cmd: command not found
+$ echo $?
+127
+```
+
+**Linux Exit Status Codes**
+
+
+| Code | Description |
+| --- | --- |
+| 0 | Successful completion of the command |
+| 1 | General unknown error |
+| 2 | Misuse of shell command |
+| 126 | The command can’t execute |
+| 127 | Command not found |
+| 128 | Invalid exit argument |
+| 128+x | Fatal error with Linux signal x |
+| 130 | Command terminated with Ctrl+C |
+| 255 | Exit status out of range |
+
+**11.8.2 The `exit` command**
+
+By default, your shell script exits with the exit status of the last command in your script.
+
+```
+$ cat script1
+#!/bin/bash
+answer=$(bc << EOF
+a=10.45
+b=3.2
+a * b
+EOF
+)
+
+echo the final result is $answer
+exit 5
+```
+
+When checking the exit status of the script:
+
+```
+$ ./script1
+the final result is 33.44
+$ echo $?
+5
+```
+
+# 12. Using Structured Commands
+
+## 12.1 Working with the `if-then` Statement
+
+The if-then statement has the following format:
+
+```
+if <command>
+then
+ <commands>
+fi
+```
+
+or,
+
+```
+if <command>;then
+    <commands>
+fi
+```
+
+If the exit status of the command within the `if` statement is zero (the command completed successfully), the commands listed under the `then` section are executed. If the exit status of the command is anything else, the `then` commands aren’t executed, and the bash shell moves on to the next command in the script. The `fi` statement delineates the `if-then` statement’s end.
+
+```
+$ cat script1
+#!/bin/bash
+if pwd
+then
+	echo "The pwd command worked"
+fi
+```
+
+## 12.2 Exploring the `if-then-else` Statement
+
+```
+if <command>
+then
+ <commands>
+else
+ <commands>
+fi
+```
+
+## 12.3 Nesting `if`s
+
+```
+if <command1>
+then
+ <commands>
+elif <command2>
+then
+ <more commands>
+fi
+```
+
+You can continue to string elif statements together, creating one huge if-then-elif
+conglomeration: 
+
+```
+if command1
+then
+ command set 1
+elif command2
+then
+ command set 2
+elif command3
+then
+ command set 3
+elif command4
+then
+ command set 4
+fi
+```
+
+## 12.4 Trying the `test` command
+
+When used in an if-then statement, the test command looks like this:
+
+```
+if test condition
+then
+ commands
+fi
+```
+
+or,
+
+```
+if [ condition ]
+then
+ commands
+fi
+```
+
+If you leave out the condition portion of the test command statement, it exits with a non-zero exit status code and triggers any else block statements.
+
+The test command and test conditions can evaluate three classes of conditions: 
+- Numeric comparisons
+- String comparisons
+- File comparisons
+
+### 12.4.1 Using numeric comparisons
+
+**The test Numeric Comparisons**
+
+| Comparison | Description |
+| --- | --- |
+| `n1 -eq n2` | Checks if n1 is equal to n2 |
+| `n1 -ge n2` | Checks if n1 is greater than or equal to n2 |
+| `n1 -gt n2` | Checks if n1 is greater than n2 |
+| `n1 -le n2` | Checks if n1 is less than or equal to n2 |
+| `n1 -lt n2` | Checks if n1 is less than n2 |
+| `n1 -ne n2` | Checks if n1 is not equal to n2 |
+
+### 12.4.2 Using string comparisons
+
+**The test String Comparisons**
+
+| Comparison | Description |
+| --- | --- |
+| `str1 = str2` | Checks if str1 is the same as string str2 |
+| `str1 != str2` | Checks if str1 is not the same as str2 |
+| `str1 < str2` | Checks if str1 is less than str2 |
+| `str1 > str2` | Checks if str1 is greater than str2 |
+| `-n str1` | Checks if str1 has a length greater than zero |
+| `-z str1` | Checks if str1 has a length of zero |
+
+### 12.4.3 Using file comparisons
+
+**The test File Comparisons**
+
+| Comparison | Description |
+| --- | --- |
+-d file | Checks if file exists and is a directory
+-e file | Checks if file exists
+-f file | Checks if file exists and is a file
+-r file | Checks if file exists and is readable
+-s file | Checks if file exists and is not empty
+-w file | Checks if file exists and is writable
+-x file | Checks if file exists and is executable
+-O file | Checks if file exists and is owned by the current user
+-G file | Checks if file exists and the default group is the same as the current user
+file1 -nt file2 | Checks if file1 is newer than file2
+file1 -ot file2 | Checks if file1 is older than file2
+
+## 12.5 Considering Compound Testing
+
+The `if-then` statement allows you to use Boolean logic to combine tests. You can use these two Boolean operators: 
+- `[ condition1 ] && [ condition2 ]`
+- `[ condition1 ] || [ condition2 ]`
+
+## 12.6 Working with Advanced `if-then` Features
+
+Three additions to the bash shell provide advanced features that you can use in `if-then` statements: 
+
+- Single parentheses for executing commands in a child shell
+- Double parentheses for mathematical expressions
+- Double square brackets for advanced string handling functions
+
+### 12.6.1 Using single parentheses
+
+Here's the format of the single parentheses:
+
+```
+(command)
+```
+
+### 12.6.2 Using double parentheses
+### 12.6.3 Using double square brackets

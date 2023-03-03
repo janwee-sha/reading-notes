@@ -66,7 +66,6 @@ HTTP1.1新增了六种请求方式：OPTIONS、PUT、PATCH、DELETE、TRACE和CO
 - **WWW-Authenticate**，表示客户应该在Authorization头中提供什么类型的授权信息。在包含401（Unauthorized）状态行的应答中这个头是必需的。例如，response.setHeader("WWW-Authenticate", "BASIC realm=＼"executives＼"")。
 Servlet一般不进行这方面的处理，而是让Web服务器的专门机制来控制受密码保护页面的访问（例如.htaccess）。
 
-
 ## HTTP状态码
 
 HTTP状态码由三个十进制数字组成，第一个十进制数字定义了状态码的类型。
@@ -258,13 +257,23 @@ XA将事务提交拆分为两阶段过程（**两段式提交**）：
 
 多个服务同时访问多个数据源的事务场景。
 
-### CAP理论
+### CAP定理
 
 在分布式系统中，涉及共享数据问题时，以下三个特性最多只能同时满足其中两个：
 
-- **一致性**（Consistency）：代表数据在任何时刻、任何分布式节点中所看到的都是符合预期的。
-- **可用性**（Availability）：代表系统不间断地提供服务的能力。
+- **一致性**（Consistency）：代表数据在任何时刻、任何分布式节点中所看到的都是符合预期的。此处指面向数据库状态的一致性而非面向副本的一致性。
+- **可用性**（Availability）：代表系统不间断地提供服务的能力。与可用性密切相关的两个指标：可靠性（Reliability）和可维护性（Serviceability）。可靠性使用平均无故障时间（MTBF）来度量，可维护性使用平均可修复时间（MTTR）来度量。Availability = MTBF/（MTBF+MTTR）。
 - **分区容忍性**（Partition Tolerance）：代表分布式环境中部分节点因网络原因彼此失联后，即与其他节点形成网络分区时，系统仍能正确地提供服务的能力。
+
+放弃一致性的AP系统目前是设计分布式系统的主流选择，但是仍然可以退而求其次追求比强一致性（Strong Consistency）稍弱的最终一致性（Eventual Consistency）。
+
+由于一致性的定义变动，“事务”一词的含义其实也同样被拓展了，人们把使用ACID的事务称为刚性事务，而诸如可靠事件队列、TCC事务、SAGA事务之类的分布式事务的常见做法统称为“柔性事务”。
+
+### 可靠事件队列
+
+### TCC事务
+
+### SAGA事务
 
 # 4 透明多级分流系统
 
