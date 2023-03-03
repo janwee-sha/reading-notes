@@ -1101,22 +1101,23 @@ $ ls -l newfile
 
 ==TBC==
 
-# 11. 构建基础脚本
+# 11. Basic Script Building
 
-## 11.2 创建Shell脚本
+## 11.2 Creating a Script File
 
-在创建Shell脚本时，必须在文件第一行指定要使用的shell，格式如下：
+When creating a shell script file, you must specify the shell you are using in the first line of the file. Here’s the format for this:
 
 ```
 #!/bin/bash
 ```
 
-`PATH` 环境变量被设置为用于在其中查找命令的一系列目录。要让shell找到某个 shell 脚本，可以：
+The `PATH` environment variable is set to look for commands only in a handful of directories. To get the shell to find a script, we need to do one of two things:
 
-- 将放置shell脚本文件的目录添加到 `PATH` 环境变量。
-- 在命令行中使用绝对路径或相对路径来引用 `shell` 脚本文件。
+- Add the directory where our shell script fi le is located to the PATH environment 
+variable.
+- Use an absolute or relative file path to reference our shell script fi le in the prompt.
 
-如：
+For example：
 
 ```
 $ chmod u+x script1
@@ -1129,9 +1130,9 @@ $ ./script1
 
 ### 11.4.1 Environment variables
 
-- `set` 命令：显示一份完整的当前环境变量列表。
+- `set` command：Displays a complete list of active environment variables available.
 
-在脚本中，可以在环境变量名前加上 *$* 来引用这些环境变量，如：
+You can tap into these environment variables from within your scripts by using the environment variable’s name preceded by a dollar sign. This is demonstrated in the following script:
 
 ```
 #!/bin/bash
@@ -1140,14 +1141,16 @@ echo "Current user is $USER"
 
 ### 11.4.2 User variables
 
-变量名区分大小写，长度不能超过20个字符，使用等号为变量赋值。
+User variables can be any text string of up to 20 letters, digits, or an underscore character. User variables are case sensitive.
+
+Values are assigned to user variables using an equal sign.
 
 ```
 book="The Song of Ice and Fire"
 author="George R. R. Martin"
 ```
 
-shell脚本中定义的变量在脚本整个生命周期一直保持它们的值，在脚本结束时会被删除。
+Variables defi ned within the shell script maintain their values throughout the life of the shell script but are deleted when the shell script completes.
 
 It’s important to remember that when referencing a variable value you use the dollar sign, but when referencing the variable to assign a value to it, you do not use the dollar sign. Here’s an example:
 
