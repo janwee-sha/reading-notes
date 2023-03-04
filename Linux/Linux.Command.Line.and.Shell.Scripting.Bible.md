@@ -902,6 +902,84 @@ The `egrep` command is an offshoot of `grep`, which alows you to specify POSIX e
 
 ==TBC==
 
+## 5.2 Exploring Parent and Child Shell Relationships
+
+### 5.2.1 Looking at process list
+
+When the `/bin/bash` command or the equivalent `bash` command is entered at the CLI prompt, a new shell program is created. This is a child shell. A child shell also has a CLI prompt and waits for commands to be entered.
+
+A subshell can be created from a parent shell, and a subshell can be created from another subshell:
+
+```
+$ ps -f --forest
+UID          PID    PPID  C STIME TTY          TIME CMD
+root     3222724 3222464  0 Feb25 pts/0    00:00:00 bash
+root      950314  950104  0 Feb11 pts/0    00:00:00 bash
+root      279698  279659  0 02:35 pts/0    00:00:00 -bash
+root      279742  279698  0 02:35 pts/0    00:00:00  \_ bash
+root      280220  279742  0 02:39 pts/0    00:00:00      \_ bash
+root      280304  280220  0 02:40 pts/0    00:00:00          \_ ps -f --forest
+```
+
+- `echo $BASH_SUBSHELL`: Indicates if a subshell was spawned. If it returns a 0, then there is no subshell. If it returns 1 or more, then there is a subshell.
+
+For example:
+
+```
+$ (pwd ; ls ; echo $BASH_SUBSHELL)
+/root
+client_config  dates                   Document                                          jcnf.sh           newfile2      rtps              somelog.log
+containers     debug-2022-11-26.0.log  emailformhy@163.com_2022-11-26T05_00_25.517Z.pem  log_r_client.log  nf            script1           virt-sysprep-firstboot.log
+contents       Dockerfiles             gz_client_bot.tar.gz                              newfile           r_client.jar  sh_client_bot.sh
+1
+```
+
+Gracefully exit out of each subshell by entering the `exit` command.
+
+### 5.2.2 Creatively using subshells
+
+**Investigating background mode**
+
+- `sleep NUMBER`: Accepts as a parameter the number of seconds you want the process to wait (sleep). 
+
+```
+$ sleep 5
+
+```
+
+To put a command into background mode, the & character is tacked onto its end. 
+
+```
+$ sleep 60&
+[1] 288749
+```
+
+- `jobs`: Displays background job 
+information. 
+
+```
+$ jobs
+[1]+  Running                 sleep 60 &
+```
+
+When the background job is fi nished, its completion status is displayed:
+
+```
+$ jobs
+[1]+  Done                    sleep 60
+```
+
+**Putting process lists into the background**
+
+Using a process list including sleep commands and displaying the BASH_SUBSHELLvariable operates as you would expect:
+
+```
+$ (sleep 2 ; echo $BASH_SUBSHELL ; sleep 2)
+1
+```
+
+==TBC==
+
 # 6 Linux环境变量
 
 ## 6.5 设置 `PATH` 环境变量
@@ -1623,7 +1701,7 @@ The `if-then` statement allows you to use Boolean logic to combine tests. You ca
 
 Three additions to the bash shell provide advanced features that you can use in `if-then` statements: 
 
-- Single parentheses for executing commands in a child shell
+- Single parentheses for executing commands in a subshell
 - Double parentheses for mathematical expressions
 - Double square brackets for advanced string handling functions
 
@@ -1634,6 +1712,32 @@ Here's the format of the single parentheses:
 ```
 (command)
 ```
+
+Before bash shell executing the command, a subshell will be created to execute commands. If the exit status is 0, the commands listed under the `then` section will be executed. Otherwise they won't be executed.
+
+For example, here's *script1*:
+
+```
+#!/bin/bash
+echo $BASH_SUBSHELL
+if (echo $BASH_SUBSHEL)
+then 
+	echo "The subshell command operated successfully."
+else 
+	echo "The subshell command was NOT successful"
+fi
+```
+
+Execute it, and we get:
+
+```
+$ ./script1 
+0
+
+The subshell command operated successfully.
+```
+
+
 
 ### 12.6.2 Using double parentheses
 ### 12.6.3 Using double square brackets
