@@ -686,7 +686,7 @@ By default, the value of `-XX:GCTimeRatio` flag is set to 99 by the JVM.
 **How Compiler Works**
 ```
 flowchart LR
-    A[Source Code] --> B{{Compiler}} --> C(Machine Code) --> D([ Output ])
+    A[Source Code] --> B[Compiler] --> C[Machine Code] --> D[ Output ]
     style A fill:#696969,stroke:#333,stroke-width:4px;
     style B fill:#A020F0,stroke:#333,stroke-width:4px;
     style C fill:#458B74,stroke:#333,stroke-width:4px;
@@ -697,7 +697,7 @@ flowchart LR
 
 ```
 flowchart LR
-    A[Source Code] --> B{{Interpreter}} --> C([Output])
+    A[Source Code] --> B[Interpreter] --> C[Output]
     style A fill:#696969,stroke:#333,stroke-width:4px;
     style B fill:#A020F0,stroke:#333,stroke-width:4px;
     style C fill:##000000,stroke:#333,stroke-width:4px;
