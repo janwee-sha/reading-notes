@@ -38,7 +38,7 @@ The physical layer is responsible for the physical cable or wireless connection 
 
 ## OSI vs. TCP/IP Model
 
-![image](./Network/images/OSI-vs.-TCPIP-models.jpg)
+![image](./images/OSI-vs.-TCPIP-models.jpg)
 
 A key difference between the models is that TCP/IP is simpler, collapsing several OSI layers into one.
 
