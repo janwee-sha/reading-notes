@@ -1737,7 +1737,78 @@ $ ./script1
 The subshell command operated successfully.
 ```
 
-
-
 ### 12.6.2 Using double parentheses
+
+双括号命令允许在比较过程中使用高级数学表达式。test命令比较时只能使用简单的算术操作。双括号命令格式如下：
+
+```
+(( expression ))
+```
+
+双括号命令符号：
+
+| 符号 | `val++` | `val--` | `++val` | `--val` | `!` | `~` | `**` | `<<` | `>>` | `&` | \| | `&&` | \|\| |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | 
+| 描述 | 后增 | 后减 | 先增 | 先减 | 逻辑求反 | 位求反 | 幂运算 | 左位移 | 右位移 | 位布尔AND | 位布尔OR | 逻辑AND | 逻辑或 |
+
+比如：
+
+```
+#!/bin/bash
+val1=10
+if (( $val1 ** 2 > 90 ))
+then
+	(( val2 = $val1 ** 2 ))
+	echo "The square of $val1 is $val2"
+fi
+```
+
+> 注意：双括号中表达式的大于号不用转义。
+
 ### 12.6.3 Using double square brackets
+
+双方括号命令提供了针对字符串比较的高级特性。
+
+格式：
+
+```
+[[ expression ]]
+```
+
+`expression` 可以使用test命令中的标准字符串比较。此外还提供了**模式匹配**。
+
+比如：
+
+```
+#!/bin/bash
+val1=10
+if [[ $BASH_VERSION == 5.* ]]
+then
+	(( val2 = $val1 ** 2 ))
+	echo "Using Bash Shell version 5 series"
+fi
+```
+
+## 12.7 the `case` Command
+
+格式：
+
+```
+case variable in
+pattern1 | pattern2) commands1;;
+pattern3) commands2;;
+*) default commands;;
+esac
+```
+
+如：
+
+```
+#!/bin/bash
+case $USER in 
+root | janwee)
+	echo "Hello, admin user!";;
+*)
+	echo "Hello, guest user!";;
+esac
+```

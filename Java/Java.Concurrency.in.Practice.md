@@ -1,4 +1,4 @@
-> The following are references of Brian Goetz's [Java Concurrency in Practice ](https://www.amazon.com/Java-Concurrency-Practice-Brian-Goetz/dp/0321349601)
+> The following content is quoted from Brian Goetz's [Java Concurrency in Practice ](https://www.amazon.com/Java-Concurrency-Practice-Brian-Goetz/dp/0321349601)
 
 ### 3.1.4 Volatile Variables
 
@@ -28,3 +28,8 @@ Java语言提供了一种稍弱的同步机制，即 `volatile` 变量，用来�
 > - 保证此变量对所有的线程的可见性。“可见性”指当一个线程修改了这个变量的值，`volatile` 保证了新值能立即同步到主内存，以及每次使用前立即从主内存刷新。但普通变量做不到这点，普通变量的值在线程间传递均需要通过主内存来完成。
 >
 > - 禁止指令重排序优化。有 `volatile` 修饰的变量，赋值后多执行了一个“`load addl $0x0, (%esp)`”操作，这个操作相当于一个内存屏障（指令重排序时不能把后面的指令重排序到内存屏障之前的位置），只有一个CPU访问内存时，并不需要内存屏障；（什么是指令重排序：是指CPU采用了允许将多条指令不按程序规定的顺序分开发送给各相应电路单元处理）。
+
+### 11.4.3 锁分段
+
+==TBC==
+
