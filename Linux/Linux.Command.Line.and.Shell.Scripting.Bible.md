@@ -883,6 +883,11 @@ one
 three
 ```
 
+- `-B`, `--before-context=NUM`, print NUM lines of leading context.
+- `-A`, `--after-context=NUM`, print NUM lines of trailing context.
+- `-C`, `--context=NUM`, print NUM lines of output context.
+- `-NUM`, same as `--context=NUM`
+
 By default, the `grep` command uses basic UNIX-style regular expressions, which uses special characters to define how to look for matching patterns, to match patterns. 
 
 Here's a simple example:
@@ -1812,3 +1817,64 @@ root | janwee)
 	echo "Hello, guest user!";;
 esac
 ```
+
+# 13. More Structured Commands
+
+## 13.1 The `for` Command
+
+The basic format of the Bash shell `for` command:
+
+```
+for VAR in LIST
+do
+    COMMANDS
+done
+```
+
+For example, a script that monitors the Docker containers:
+
+```
+#!/bin/bash
+for id in $(docker ps -aq)
+do
+	name=$(docker container inspect --format "{{ .Name}}" $id)
+	state=$(docker container inspect --format "{{ .State.Status}}" $id)
+	echo "Container $name is $state"
+done
+```
+
+### Changing the field separator
+
+The `IFS` (the internal field separator) environment variable defines a list of characters the Bash shell uses as field separators. By default, the Bash shell considers the following characters as field separators:
+
+- A space
+- A tab
+- A newline
+
+For example:
+
+```
+IFS=$'\n'
+```
+
+Specify more than one `IFS` character:
+
+```
+IFS=$'\n':;" 
+```
+
+### Reading a directory using wildcards
+
+```
+for file in /home/janwee/*
+do
+    if [ -d "$file"]
+    ...
+done
+```
+
+## 13.2 Trying the C-Style for Command
+
+### The C language for command
+
+==TBC==
