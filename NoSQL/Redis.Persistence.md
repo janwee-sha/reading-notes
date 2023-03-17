@@ -1,4 +1,4 @@
-> https://www.memurai.com/blog/redis-persistence-deep-dive
+> Reference link: https://www.memurai.com/blog/redis-persistence-deep-dive
 
 Redis supports two very different persistence models: the Redis Database Backup (RDB) model and the Append Only File (AOF) model.
 
