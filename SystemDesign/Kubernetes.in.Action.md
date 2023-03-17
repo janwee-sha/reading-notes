@@ -1,4 +1,4 @@
-> The following is a reference to [Marko Luksa's Kubernetes in Action](http://www.broadview.com.cn/book/5227) and https://kubernetes.io/
+> The following is a reference to [Marko Luksa's Kubernetes in Action](http://www.broadview.com.cn/book/5227) and <https://kubernetes.io/>
 
 # 1. Introducing Kubernetes
 
@@ -16,17 +16,17 @@
 
 运行在同一操作系统上的容器之间的隔离实现机制有两个：
 
-- **Linux命名空间**。它使每个进程只看到它自己的系统视图（文件、进程、网络接口、主机名等）。
-- **Linux控制组（cgroups）**。它限制了进程能使用的资源量（CPU、内存、网络带宽等）。
+*   **Linux命名空间**。它使每个进程只看到它自己的系统视图（文件、进程、网络接口、主机名等）。
+*   **Linux控制组（cgroups）**。它限制了进程能使用的资源量（CPU、内存、网络带宽等）。
 
 ## 1.3 Introducing Kunernetes
 
 ### 1.3.3 Understanding the architecture of a Kubernetes cluster
 
-在硬件级别，一个Kubernetes集群由很多节点组成，这些人被分成两种类型：
+在硬件级别，一个Kubernetes集群由很多节点组成，分成两种类型：
 
-- 主节点，它承载着Kubernetes控制和管理整个集群系统的控制面板。
-- 工作节点，它们运行用户实际部署的应用。
+*   主节点，它承载着Kubernetes控制和管理整个集群系统的控制面板。
+*   工作节点，它们运行用户实际部署的应用。
 
 ![image](https://github.com/janwee-sha/reading-notes/blob/main/SystemDesign/images/Kubernetes.in.Action.Figure.1.9.png)
 
@@ -34,26 +34,26 @@
 
 控制面板用于控制集群并使它工作。它包含多个组件，组件可以运行在单个主节点上或者通过副本分别部署在多个主节点以确保高可用性。组件包括：
 
-- **Kubernetes API服务器**，你和其他控制面板组件都要和它通信。
-- **Scheduler**，它调度你的应用（为应用的每个可部署组件分配一个工作节点）。
-- **Control Manager**，它执行集群级别的功能，如复制组件、持续跟踪工作节点、处理节点失败等。
-- **etcd**，一个可靠的分布式数据存储，它能持久化存储集群配置。
+*   **Kubernetes API服务器**，你和其他控制面板组件都要和它通信。
+*   **Scheduler**，它调度你的应用（为应用的每个可部署组件分配一个工作节点）。
+*   **Control Manager**，它执行集群级别的功能，如复制组件、持续跟踪工作节点、处理节点失败等。
+*   **etcd**，一个可靠的分布式数据存储，它能持久化存储集群配置。
 
 **工作节点**
 
 工作节点是运行容器化应用的机器。运行、监控和管理应用服务的任务是由以下组件完成的：
 
-- Docker、rkt或其他的容器类型
-- Kubelet，它与API服务器通信，并管理它所在节点的容器
-- Kubernetes Service Proxy（kube-proxy），它负责组件之间的负载均衡网络流量
+*   Docker、rkt或其他的容器类型
+*   Kubelet，它与API服务器通信，并管理它所在节点的容器
+*   Kubernetes Service Proxy（kube-proxy），它负责组件之间的负载均衡网络流量
 
 ### 1.3.4 Running an application in Kubernetes
 
 在Kubernetes中运行应用的步骤：
 
-1. 将应用打包为一个或多个容器镜像；
-2. 再将那些镜像推送到镜像仓库；
-3. 然后将应用的描述发布到Kubernetes API服务器。
+1.  将应用打包为一个或多个容器镜像；
+2.  再将那些镜像推送到镜像仓库；
+3.  然后将应用的描述发布到Kubernetes API服务器。
 
 应用的描述包括注入容器镜像或者包含应用程序组件的容器镜像、这些镜像如何相互关联，以及哪些组件需要同时运行在同一个节点上和哪些组件不需要同时运行等信息。此外，该描述还包括哪些组件为内部或外部客户提供服务且应该通过单个IP地址暴露，并使其他组件可以发现。
 
@@ -77,10 +77,10 @@
 
 ### 1.3.5 The benefits of using Kubernetes
 
-- **简化应用程序部署**
-- **更好地利用硬件**
-- **健康检查和自修复**
-- **自动扩容**
+*   **简化应用程序部署**
+*   **更好地利用硬件**
+*   **健康检查和自修复**
+*   **自动扩容**
 
 # Chapter 2. First step with Kubernetes and Docker
 
@@ -92,39 +92,33 @@
 
 使用Docker运行一个容器：
 
-```
-docker run [OPTIONS] IMAGE [COMMAND] [ARG...]
-```
+    docker run [OPTIONS] IMAGE [COMMAND] [ARG...]
 
 ### 2.1.2 Creating a trivial Node.js app
 
 构建一个简单的Node.js Web应用，代码如下：
 
-```
-const http = require('http');
-const os = require('os');
+    const http = require('http');
+    const os = require('os');
 
-console.log("Kubia server starting...");
+    console.log("Kubia server starting...");
 
-var handler = function (request, response) {
-	console.log("Receiving request from" + request.connection.remoteAddress);
-	response.writeHead(200);
-	response.end("You've hit " + os.hostname() + "\n");
-};
+    var handler = function (request, response) {
+    	console.log("Receiving request from" + request.connection.remoteAddress);
+    	response.writeHead(200);
+    	response.end("You've hit " + os.hostname() + "\n");
+    };
 
-var www = http.createServer(handler);
-www.listen(7400);
-```
+    var www = http.createServer(handler);
+    www.listen(7400);
 
 ### 2.1.3 Creating a Dockerfile the image
 
 构建应用容器镜像的Dockerfile：
 
-```
-FROM node
-ADD app.js /app.js
-ENTRYPOINT ["node", "app.js"]
-```
+    FROM node
+    ADD app.js /app.js
+    ENTRYPOINT ["node", "app.js"]
 
 From行定义了镜像的起始内容（构建所基于的基础镜像）。这个例子中使用的是node镜像的tag 7版本。第二行把app.js文件从本地文件夹添加到镜像的根目录，保持app.js这个文件名。最后一行定义了当镜像被运行时需要被执行的命令，这个例子中，命令是`node app.js`。
 
@@ -132,9 +126,7 @@ From行定义了镜像的起始内容（构建所基于的基础镜像）。这�
 
 现在有了Dockerfile和app.js文件，这是用来构建镜像的所有文件。运行下面的Docker命令来构建镜像：
 
-```
-docker build -t kubia .
-```
+    docker build -t kubia .
 
 镜像构建的过程如下图所示：
 
@@ -158,9 +150,7 @@ docker build -t kubia .
 
 以下的命令可以用来运行镜像：
 
-```
-docker run --name kubia -p 7400:7400 -d kubia
-```
+    docker run --name kubia -p 7400:7400 -d kubia
 
 > `-d` 标志：将容器和命令行分离，即在后台运行命令。
 
@@ -168,9 +158,7 @@ docker run --name kubia -p 7400:7400 -d kubia
 
 访问你的应用：
 
-```
-curl localhost:7400
-```
+    curl localhost:7400
 
 ### 2.1.6 Exploring the inside of a running container
 
@@ -178,9 +166,7 @@ curl localhost:7400
 
 镜像基于的Node.js镜像包含了bash shell，所以可以像这样在容器内运行shell：
 
-```
-docker exec -it kubia bash
-```
+    docker exec -it kubia bash
 
 > `-i` 标志，开启标准输入流。
 > `-t` 标志，分配一个伪终端（TTY）。
@@ -197,36 +183,28 @@ docker exec -it kubia bash
 
 停止容器：
 
-```
-docker stop [OPTIONS] CONTAINER [CONTAINER...]
-```
+    docker stop [OPTIONS] CONTAINER [CONTAINER...]
 
 删除容器：
 
-```
-docker rm [OPTIONS] CONTAINER [CONTAINER...]
-```
+    docker rm [OPTIONS] CONTAINER [CONTAINER...]
 
 ### 2.1.8 Pushing the image to an image registry
 
 **使用附加标签标注镜像**
 
-在推送之前，需要重新根据Docker Hub的规则标注镜像。Docker Hub允许像以你的Docker Hub ID开头的镜像仓库推送镜像。可以在 [http://hub.docker.com](http://hub.docker.com) 上注册Docker Hub ID。
+在推送之前，需要重新根据Docker Hub的规则标注镜像。Docker Hub允许像以你的Docker Hub ID开头的镜像仓库推送镜像。可以在 <http://hub.docker.com> 上注册Docker Hub ID。
 
 获得自己的ID后，就可以重命名镜像（用自己的Docker Hub ID替换 janwee）：
 
-```
-docker tag kubia janwee/kubia
-```
+    docker tag kubia janwee/kubia
 
 这不会重命名标签，而是给同一个镜像创建一个额外的标签。如下所示：
 
-```
-$ docker images | head
-REPOSITORY     TAG       IMAGE ID       CREATED             SIZE
-janwee/kubia   latest    2e7625696c2a   About an hour ago   998MB
-kubia          latest    2e7625696c2a   About an hour ago   998MB
-```
+    $ docker images | head
+    REPOSITORY     TAG       IMAGE ID       CREATED             SIZE
+    janwee/kubia   latest    2e7625696c2a   About an hour ago   998MB
+    kubia          latest    2e7625696c2a   About an hour ago   998MB
 
 可以看到，kubia 和 janwee/kubia 指向同一个镜像ID，所以实际上是同一个镜像的两个标签。
 
@@ -234,9 +212,7 @@ kubia          latest    2e7625696c2a   About an hour ago   998MB
 
 在向Docker Hub推送镜像之前，现需要使用 `docker login` 命令和自己的用户ID登录。然后执行如下命令推送：
 
-```
-docker push janwee/kubia
-```
+    docker push janwee/kubia
 
 ## 2.2 Setting up a Kubernetes cluster
 
@@ -244,7 +220,7 @@ docker push janwee/kubia
 
 A long list of methods exists for installing a Kubernetes cluster. These methods are described in the documentation at [https://kubernetes.io](https://kubernetes.io/). In this chapter, we'll cover two simple options for getting your hands on running Kubernetes cluster.
 
-安装Kubernetes集群的方法有许多。这些方法在 [https://kubernetes.io](https://kubernetes.io) 的文档中有详细的描述。 Kubernetes可以在本地的开发机器、自己组织的机器或是虚拟机提供商（Google Computer Engine、Amazon EC2、Microsoft Azure等）上运行，或者使用托管的Kubernetes集群，如Google Kubernetes Engine。
+安装Kubernetes集群的方法有许多。这些方法在 <https://kubernetes.io> 的文档中有详细的描述。 Kubernetes可以在本地的开发机器、自己组织的机器或是虚拟机提供商（Google Computer Engine、Amazon EC2、Microsoft Azure等）上运行，或者使用托管的Kubernetes集群，如Google Kubernetes Engine。
 
 ### 2.2.1 Running a local single-node Kubernetes cluster with Minikube
 
@@ -258,9 +234,7 @@ Minikube是一个需要下载并放到路径中的二进制文件。它适用于
 
 使用下面的命令启动Kubernetes集群：
 
-```
-minikube start
-```
+    minikube start
 
 ## 安装Kubernetes客户端（kubectl）
 
@@ -268,39 +242,31 @@ minikube start
 
 但是如果 `kubectl` 不是安装在本地的情况下，minikube中包含的kubectl需要像下面这样使用：
 
-```
-minikube kubectl -- <kubectl commands>
-```
+    minikube kubectl -- <kubectl commands>
 
 要在本地安装kubectl CLI客户端，需要下载它并放在路径中。kubectl命令行工具的安装和使用可参考[Kubernetes官网中关于kubectl的文档](https://kubernetes.io/zh-cn/docs/reference/kubectl/)。
 
 **使用kubectl查看集群是否正常工作**
 
-```
-kubectl cluster-info
-```
+    kubectl cluster-info
 
 **列出集群节点**
 
 可以使用kubectl命令列出集群中的所有节点：
 
-```
-kubectl get nodes
-```
+    kubectl get nodes
 
 **查看对象的更多信息**
 
 要查看关于对象的更详细的信息，可以使用 `kubectl describe` 命令，如：
 
-```
-kubectl describe node <node name> 
-```
+    kubectl describe node <node name> 
 
 ## 2.3 Running your first app on Kubernetes
 
 ### 2.3.1 Deploying your app
 
-参考 https://kubernetes.io/zh-cn/docs/concepts/workloads/controllers/replicationcontroller/ 创建**ReplicationController**类型的pod。
+参考 <https://kubernetes.io/zh-cn/docs/concepts/workloads/controllers/replicationcontroller/> 创建**ReplicationController**类型的pod。
 
 **ReplicationController**确保在任何时候都有特定数量的Pod副本处于运行状态
 
@@ -320,11 +286,9 @@ Kubernets并不直接处理单个容器，相反，它使用多个共存容器�
 
 不能列出单个容器，因为它们不是独立的Kubernetes对象，但是可以列出pod。如下所示：
 
-```
-$ kubectl get pods
-  NAME           READY  STATUS  RESTARTS AGE
-  kubia-4jfyf   0/1     Pending 0           1m
-```
+    $ kubectl get pods
+      NAME           READY  STATUS  RESTARTS AGE
+      kubia-4jfyf   0/1     Pending 0           1m
 
 要查看有关pod的更多信息，还可以使用`kubectl describe pod`命令，就像之前查看工作节点一样。
 
@@ -348,9 +312,7 @@ $ kubectl get pods
 
 要创建服务，需要告知Kubernetes对外暴露之前创建的ReplicationController：
 
-```
-$ kubectl expose rc kubia --type=LoadBalancer --name kubia-http
-```
+    $ kubectl expose rc kubia --type=LoadBalancer --name kubia-http
 
 > rc，replicationcontroller的缩写。大多数资源类型都有这样的缩写（例如，pods的缩写是po，service的缩写是svc，等等）。
 
@@ -358,12 +320,10 @@ $ kubectl expose rc kubia --type=LoadBalancer --name kubia-http
 
 expose命令的输出中提到一个名为kubia-http的服务。服务是类似于pod和node的对象，因此可以通过运行kubectl get services命令查看新创建的服务对象，如下面的代码所示：
 
-```
-$ kubectl get svc
-NAME         TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
-kubernetes   ClusterIP      10.96.0.1        <none>        443/TCP          18h
-kubia-http   LoadBalancer   10.105.159.126   <pending>     7400:32513/TCP   2m42s
-```
+    $ kubectl get svc
+    NAME         TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
+    kubernetes   ClusterIP      10.96.0.1        <none>        443/TCP          18h
+    kubia-http   LoadBalancer   10.105.159.126   <pending>     7400:32513/TCP   2m42s
 
 `CLUSTER-IP` 栏值为 `<pending>` 表示该服务还没有外部IP地址，因为Kubernetes运行的云基础设施创建负载均衡需要一段实践。负载均衡启动后，就会显示服务的外部IP地址。
 
@@ -397,19 +357,15 @@ pod的存在是短暂的，一个pod可能在任何时候消失，或许因为�
 
 列出正在运行的ReplicationController清单：
 
-```
-$ kubectl get replicationcontrollers
-NAME    DESIRED   CURRENT   READY   AGE
-kubia   3         3         3       69m
-```
+    $ kubectl get replicationcontrollers
+    NAME    DESIRED   CURRENT   READY   AGE
+    kubia   3         3         3       69m
 
 **调整期望的副本数**
 
 可以运行如下命令改变期望ReplicationController创建的副本数：
 
-```
-kubectl scale rc kubia --replicas=<number>
-```
+    kubectl scale rc kubia --replicas=<number>
 
 使用Kubernetes给应用扩容变得非常简单。一旦应用在生产中运行并且需要扩容，可以使用一个命令添加额外的实例，而不必手动安装和运行其他副本。
 
@@ -419,23 +375,17 @@ kubectl scale rc kubia --replicas=<number>
 
 列出pod的IP、节点等附加信息：
 
-```
-kubectl get pods -o wide
-```
+    kubectl get pods -o wide
 
 ### 2.3.6 Kubernetes dashboard
 
 使用GKE时，可以通过 `kubernetes cluster-info` 命令找到dashboard的URL：
 
-```
-kubectl cluster-info | grep dashboard
-```
+    kubectl cluster-info | grep dashboard
 
 使用Minikube的Kubernetes集群的dashboard可以运行以下命令打开：
 
-```
-minikube dashboard
-```
+    minikube dashboard
 
 # 3 Pods: running containers in Kubernetes
 
@@ -477,6 +427,45 @@ Pod间的通信非常简单。不论两个Pod处于单一还是不同的工作�
 
 ### 3.1.3 Organizing containers across pods properly
 
-1. **将多层应用分散到多个pod中**。提高基础架构的利用率。
-2. **基于扩容考虑而分割到多个pod中。**
+1.  **将多层应用分散到多个pod中**。提高基础架构的利用率。
+2.  **基于扩容考虑而分割到多个pod中。**
 
+## 3.2 Creating pods from YAML or JSON descriptors
+
+---
+
+- `kubectl get pod <pod_name> -o [yaml|json]`: examining a YAML or JSON descriptor of an existing pod.
+
+YAML描述的主要组成部分：
+
+- Kubernetes API版本
+- YAML描述的资源类型
+- metadata, 包括名称、命名空间、标签等
+- spec，包含pod内容的实际说明，如pod的容器、卷及其他数据
+- status，包含运行中的pod的当前信息，如pod所处的条件、每个容器的描述和状态，以及内部的IP及其他信息
+
+---
+
+- `kubectl explain <api_object>`：查看Kubernetes API对象的解释性信息
+
+如：
+
+```
+$ kubectl explain pods
+```
+
+```
+$ kubectl explain pod.spec
+```
+
+---
+
+- `kubectl create -f <yaml_or_json_file>`：从YAML或JSON文件中创建任何资源（不只是Pod）。
+
+---
+
+- `kubectl logs <pod_name>`: 获取Pod的日志
+
+---
+
+- `kubectl port-forward <pod_name> <host_port>:<forward_port>`: 将本地网络端口转发到pod中的端口。
