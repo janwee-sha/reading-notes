@@ -1184,6 +1184,68 @@ $ ls -l newfile
 
 ==TBC==
 
+# 9 Installing Software
+
+# 9.1 Package Management
+
+**软件包管理系统**使用数据库来记录：
+
+- Linux中已安装的软件包
+- 每个软件包安装了哪些文件
+- 每个已安装的软件包的版本
+
+软件包管理器在不同的Linux发行版中天差地别。基于Debian的发行版（Ubuntu、Linux Mint等）使用的是 `dpkg` 命令；基于Red Hat的发行版（Fedora、CentOS、openSUSE等）使用的是 `rpm` 命令。
+
+## 9.2 Inspecting the Debian-Based Systems
+
+从所用的Linux发行版仓库中安装软件包需要使用APT（advanced package tool）工具集。
+
+- `apt-cache`
+- `apt-get`
+- `apt`
+
+The `apt` command is essentially a front end for both the `apt-cache` and `apt-get` commands.
+
+Basic format for the `apt` command:
+
+```
+apt [options] command
+```
+
+### 9.2.1 Managing packages with `apt`
+
+- `apt list`：displays all the packages available in the repository.
+
+For example, for displaying only installed packages:
+```
+apt --installed list
+```
+
+- `apt show <package_name>`: displays detailed information about a particular package.
+
+- `dpkg -L <package_name>`: lists all the files associated with a particular software package.
+
+- `dpkg --search <absolute_file_name>`: finds what package a particular file belongs to.
+
+### 9.2.2 Installing software packages with `apt`
+
+- `apt search <package_name>`
+
+ If you want to limit the output to only package names, include the `--names-only` option.
+ 
+- `apt install <package_name>`
+
+### 9.2.3 Upgrading software with `apt`
+
+- `apt upgrade`
+- `apt full-upgrade`: remove any packages as part of the upgrade process.
+
+### 9.2.4 Uninstalling software with apt
+
+- `apt remove <package_name>`: removes a software package, but not the data and configuration files.
+- `apt purge <package_name>`: removes a software package and the related data and configuration files.
+- `apt autoremove`: removes dependencies.
+
 # 11. Basic Script Building
 
 ## 11.2 Creating a Script File
@@ -1873,8 +1935,175 @@ do
 done
 ```
 
-## 13.2 Trying the C-Style for Command
+## 13.2 Trying the C-Style `for` Command
 
-### The C language for command
+Here's what a C-style for command looks like:
+```
+for (( a = 1; a < 10; a++ ))
+```
+## 13.3 Exploring the `while` Command
+
+Here's the format of the while command:
+```
+while <test command>
+do
+    other <commands>
+done
+```
+
+## 13.4 Using the `until` Command
+
+The until command works in exactly the opposite way from the while command. The until command requires that you specify a test command that normally produces a non-zero exit status. As long as the exit status of the test command is non-zero, the Bash shell executes the commands listed in the loop. When the test command returns a zero exit status, the loop stops.
+
+The format of the `until` command:
+
+```
+ until test commands
+ do
+    other commands
+ done
+```
+
+## 13.7 Controlling the Loop
+
+### The `break` command
+
+For example：
+
+```
+#!/bin/bash
+for var1 in 1 2 3 4 5 6 7 8 9 10
+ do
+    if [ $var1 -eq 5 ]
+    then
+       break
+    fi
+    echo "Iteration number: $var1"
+ done
+ echo "The for loop is completed"
+```
+
+The `break` command includes a single command-line parameter value:
+
+```
+break <n>
+```
+
+where n indicates the level of the loop to break out of.
+
+### The `continue` command
+
+```
+continue <n>
+```
+
+## 13.8 Processing the Output of a Loop
+
+```
+for ...
+do
+    ...
+done > <output file>
+```
+
+```
+for ...
+do
+    ...
+done | <command>
+```
+
+# 14. Handing User Input
+
+## 14.1 Passing Parameters
+
+Command-line parameters allow you to add data values to the command line when you execute the script:
+
+```
+$ ./addem 10 30
+```
+
+### Reading parameters
+
+- `$n`: reading the nth parameter.
+
+For example:
+
+```
+$ cat ReadingParameter.sh 
+#!/bin/bash
+echo "Hello, $1"
+$ ./ReadingParameter.sh janwee
+Hello, janwee
+```
+
+### Reading the script name
+
+You can use the `$0` parameter to determine the script name the shell started from the command line.
+
+- `name=$(basename $0)`: 将不包含路径的脚本名赋值给`name`。
 
 ==TBC==
+
+# 17. Creating Functions
+
+## 17.1 Exploring Basic Script Functions
+
+### 17.1.1 Creating a function
+
+Formats of function:
+
+```
+function NAME {
+    COMMANDS
+}
+```
+
+```
+NAME() {
+    COMMANDS
+}
+```
+
+### 17.1.2 Using functions
+
+```
+FUNCTION_NAME
+```
+
+If you redefine a function, the new definition overrides the original function definition, without producing any error messages.
+
+## 17.2 Returning a Value from a Function
+
+### The default exit status
+
+By default, the exit status of a function is the exit status returned by the last command in the function. After the function executes, you use the standard `$?` variable to determine the exit status of the function.
+
+### Using the `return` command
+
+The Bash shell uses the `return` command to exit a function with a specific exit status.
+
+### Using function output
+
+```
+$(FUNCTION_NAME)
+```
+
+For example:
+
+```
+$ cat ./UsingFuncOutput.sh 
+#!/bin/bash
+hello() {
+  echo "This is a example function"
+}
+echo "The function's output shows: $(hello)"
+
+$ ./UsingFuncOutput.sh 
+The function's output shows: This is a example function
+```
+
+## 17.3 Using Variables in Functions
+
+### Passing parameters to a function
+
