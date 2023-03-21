@@ -339,3 +339,76 @@ $ kubectl explain pod.spec
 ---
 
 - `kubectl port-forward <pod_name> <host_port>:<forward_port>`: 将本地网络端口转发到pod中的端口。
+
+## 3.3 使用标签组织Pod
+
+**介绍标签**
+
+标签不仅可以组织pod，还可以组织所有其他的Kubernetes资源。
+
+初始状态下每个pod都标有两个标签：
+
+- app。指定pod术语那个应用、组件或微服务。
+- rel。显示pod中运行的应用版本是stable、beta还是canary。
+
+**创建pod时指定标签**
+
+如：
+```
+...
+metadata:
+  labels:
+    app: redis
+    env: dev
+...
+```
+
+- `kubectl get po --show-labels`：列出Pod时列出标签。
+- `kubectl get po -L <label-key1>,<label-key2>,<label-key3>`: 列出Pod并附加展现标签。
+
+**修改Pod的标签**
+
+- `kubectl label <object_type> <object_name> <label-key>=<label-value> [--overwrite]`：修改已有标签键时需要加上`--overwrite`选项。
+
+## 3.4 通过标签选择器列出Pod子集
+
+- `kubectl get po -l <label-key>=<label-value>`：列出匹配指定标签键值的Pod
+- `kubectl get po -l <label-key>!=<label-value>`：列出指定标签键的值不等于给定值的Pod
+- `kubectl get po -l <label-key> in <label-value1>,<label-value2>`：列出指定标签键的值在给定值集合中的Pod
+- `kubectl get po -l <label-key> notin <label-value1>,<label-value2>`：列出指定标签键的值不在给定值集合中的Pod
+- `kubectl get po -l <label-key>`：列出匹配存在标签键的Pod
+- `kubectl get po -l '!<label-key>'`：列出匹配不存在标签键的Pod
+
+## 3.5 使用标签和选择器来约束pod调度
+
+节点选择器要求Kubernetes只将pod部署到包含给定标签的节点上：
+
+```
+spec:
+  nodeSelector:
+    gpu: "true"
+```
+
+
+
+## 3.7 使用命名空间对资源进行分组
+
+- `kubectl get ns`, 列出集群中的所有命名空间。
+- `kubectl get po --namespace <namespace>`：列出指定命名空间的Pod。
+
+YAML定义命名空间：
+
+```
+apiVersion: v1
+kind: NameSpace
+metadata:
+  name: custom-namespace
+```
+
+- `kubectl create -f <some-yaml-file> -n <a-namespace>`, 在指定命名空间中创建对象。
+
+命名空间之间实际上并不提供对正在运行得对象的任何隔离，如网络隔离。
+
+## 3.8 停止和移除pod
+
+- `kubectl delete po <pod_name>`：按名称删除Pod
