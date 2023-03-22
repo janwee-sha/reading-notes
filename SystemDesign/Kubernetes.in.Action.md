@@ -483,3 +483,53 @@ livenessProbe:
 
 ReplicationController是一种Kubernetes资源，可确保它的pod始终保持运行状态。
 
+ReplictaionController的工作时确保pod的数量始与其标签选择器匹配。
+
+ReplictaionController的3个主要部分：
+
+- label selector
+- replica count
+- pod template
+
+### 创建ReplicationController
+
+ReplicationController的YAML定义：redis-rc.yaml
+```
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: redis
+spec:
+  replicas: 3
+  selector:
+    app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - image: redis:latest
+        name: redis
+        ports:
+        - containerPort: 6379
+```
+
+- `kubectl get rc`：列出ReplicationController
+- `kubectl edit rc <RC_NAME>`:修改模板
+- `kubectl scale rc <RC_NAME> --replicas=<ReplicaNumber>`
+- `kubectl delete rc <RC_NAME> [--cascaed=[true|false]]`:删除pod并指定是否删除管理的pod。
+
+## 4.3 ReplicaSet
+
+ReplicaSet是跟ReplicationController类似的资源，是后者的替代者。
+
+### ReplicaSet vs. ReplicationController
+
+- ReplicaSet的pod选择器表达能力更强
+- ReplicaSet标签选择器除了支持匹配是否包含标签外，还支持匹配不包含某个标签，或包含特定标签键的pod
+
+
+
+
+
