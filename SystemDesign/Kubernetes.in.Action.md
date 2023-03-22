@@ -389,7 +389,7 @@ spec:
     gpu: "true"
 ```
 
-
+也可以使用每个节点的唯一标签 `kubernetes.io/hostname` 将pod调度到某个确定的节点。
 
 ## 3.7 使用命名空间对资源进行分组
 
@@ -412,3 +412,74 @@ metadata:
 ## 3.8 停止和移除pod
 
 - `kubectl delete po <pod_name>`：按名称删除Pod
+- `kubectl delete po -l <label-key>=<label-value>`：按标签删除Pod
+- `kubectl delete ns <namespace>`：删除命名空间来删除pod（及命名空间中的其他资源）
+- `kubectl delete all --all`：删除命名空间中的几乎所有资源，第一个`all`指定所有资源类型，第二个`all`指定资源类型的所有实例。
+
+# 4. 副本机制和其他资源控制器：部署托管的pod
+
+## 4.1 保持pod的健康
+
+### 存活探针
+
+Kubernetes可以通过**存活探针**（liveness probe）检查容器是否正在运行。
+
+Kubernets探测容器的3种机制：
+
+- HTTP GET探针对容器的IP地址（需要在应用中指定HTTP端点）执行HTTP GET请求。
+- TCP套接字探针尝试与容器指定端口建立TCP连接。
+- Exex探针在容器内执行任意命令，并检查命令的退出状态码。
+
+### 基于HTTP的存活探针
+
+如，指定探测`8080:/`HTTP端点的存活探针：
+```
+spec:
+  containers:
+  - image: luksa/kubia-unhealthy
+    name: kubia
+    livenessProbe:
+      httpGet:
+        path: /
+        port: 8080
+```
+
+重启容器后的pod描述：
+
+```
+...
+Containers:
+  kubia:
+  ...
+  State:          Running
+      Started:      Wed, 22 Mar 2023 06:10:35 +0000
+    Last State:     Terminated
+      Reason:       Error
+      Exit Code:    137
+      Started:      Wed, 22 Mar 2023 06:08:45 +0000
+      Finished:     Wed, 22 Mar 2023 06:10:34 +0000
+    Ready:          True
+    Restart Count:  6
+...
+Events:
+  Type     Reason     Age                  From               Message
+  ----     ------     ----                 ----               -------
+  Warning  Unhealthy  108s (x16 over 10m)  kubelet            Liveness probe failed: HTTP probe failed with statuscode: 500
+...
+```
+
+### 配置存活探针的附加属性
+
+定义探针时可以自定义延迟（delay）、超时（timeout）、周期（period）等附加参数。
+
+```
+livenessProbe:
+  initalDelaySeconds: <seconds>
+  timeoutSeconds: <seconds>
+  periodSeconds: <seconds>
+```
+
+## 4.2 ReplicationController
+
+ReplicationController是一种Kubernetes资源，可确保它的pod始终保持运行状态。
+
