@@ -6,6 +6,50 @@
 - Kubectl – 与Kubernetes集群互动的CLI。
 - Kubelet – 这是在集群的工作节点上运行的Kubernetes进程。它负责与控制平面保持联系，并在请求时启动新的容器。
 
+##  安装容器运行时
+
+参照[Docker官方文档](https://docs.docker.com/engine/install/)安装Docker引擎。
+
+对containerd配置文件进行一些调整，以使其与Kubernetes正常工作。首先用containerd的默认配置替换该文件的内容：
+
+```
+sudo containerd config default > /etc/containerd/config.toml
+```
+
+接着找到 `/etc/containerd/config.toml` 文件中的下面这行：
+
+```
+SystemdCgroup = false
+```
+
+将值替换为true：
+
+```
+SystemdCgroup = true
+```
+
+重启 contianerd 服务使配置生效：
+
+```
+sudo service containerd restart
+```
+
+## 启用br_netfilter模块
+
+为了使iptables能够看到桥接的流量，我们需要启用br_netfilter内核模块。如果缺少这个模块，Kubeadm将不会让你创建你的集群。
+
+你可以用以下命令启用它：
+
+```
+$ sudo modprobe br_netfilter
+```
+
+将br_netfilter纳入系统的模块列表，使其在重启后持久化：
+
+```
+$ echo br_netfilter | sudo tee /etc/modules-load.d/kubernetes.conf
+```
+
 ## 创建集群
 
 ```
@@ -98,7 +142,7 @@ nginx        NodePort    10.96.213.56   <none>        80:32222/TCP   95s
 发送HTTP请求至nginx服务的端点：
 
 ```
-$ curl http://10.96.213.56:80
+$ curl http://localhost:32222
 <!DOCTYPE html>
 <html>
 <head>
