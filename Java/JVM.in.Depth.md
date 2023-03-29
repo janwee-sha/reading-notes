@@ -344,7 +344,22 @@ Java堆和方法区的内存分配和回收则有着不确定性，这些部分�
 
 Java虚拟机把描述类的数据从Class文件加载到内存，并对数据进行校验、转换解析和初始化，最终形成可以被虚拟机直接使用的Java类型，这个过程被称作虚拟机的类加载过程。
 
-## 7.2 类加载时的机制
+## 7.2 类加载时的时机
+
+**类的生命周期**：
+
+```mermaid
+	graph TB
+    A(Loading) --> B(Verification) --> C(Preparation) --> D(Resolution) --> E(Initialization) --> F(Using) --> G(Unloading)
+	style A fill:#4169E1,stroke:#333,stroke-width:4px;
+	style B fill:#A020F0,stroke:#333,stroke-width:4px;
+	style C fill:#458B74,stroke:#333,stroke-width:4px;
+	style D fill:##000000,stroke:#333,stroke-width:4px;
+	style E fill:#B22222,stroke:#333,stroke-width:4px;
+	style G fill:#696969,stroke:#333,stroke-width:4px;
+```
+
+
 
 一个类型从被加载到虚拟机内存中开始，到卸载出内存为止，它的整个生命周期将会经历加载（Loading）、验证（Verification）、准备（Preparation）、解析（Resolution）、初始化（Initialization）、使用（Using）和卸载七个阶段，其中验证、准备、解析三个阶段统称为连接（Linking）。
 
