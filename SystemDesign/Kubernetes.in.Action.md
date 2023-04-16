@@ -529,7 +529,35 @@ ReplicaSet是跟ReplicationController类似的资源，是后者的替代者。
 - ReplicaSet的pod选择器表达能力更强
 - ReplicaSet标签选择器除了支持匹配是否包含标签外，还支持匹配不包含某个标签，或包含特定标签键的pod
 
+## 4.4 DaemonSet
 
+DaemonSet在每个节点上只运行一个pod副本，而副本则将它们随机地分布在整个集群中。
 
+如果节点下线，DaemonSet不会在其他地方重新创建pod。但是，当新节点被添加到集群中时，DaemonSet会立即部署一个新的pod实例。
 
+## 10 StatefulSet：部署有状态的多副本应用
+
+## 10.2 了解StatefulSet
+
+### 提供稳定的网络标识
+
+一个StatefulSet创建的每个pod都有一个从零开始的顺序索引，这个会体现在pod的名称和主机上，同样还会体现在pod对应的固定存储上。
+
+一个Stateful通常需要对应创建一个用来记录每个pod网络标记的headless Service。通过这个Service，每个pod将拥有独立的DNS记录，这样集群里它的伙伴或者客户端可以通过主机名方便地找到它。
+
+当一个Stateful管理的一个pod实例消失后，Stateful会保证重启一个新的pod实例替换它，且新实例拥有与之前pod完全一致的名称和主机名。
+
+扩容一个Statefulset会使用下一个未使用的顺序索引值创建一个新的pod实例。缩容一个Statefulset会删除最高索引值的实例。
+
+### 为每个有状态的实例提供稳定的专属存储
+
+有状态的pod的存储必须是持久的，且与pod解耦。
+
+像Statefulset创建pod一样，Statefulset也需要创建持久卷声明。
+
+**持久卷的扩缩容**
+
+扩容Statefulset时，会创建两个或更多的API对象（一个pod和与之关联的一个或多个持久卷声明）。缩容时，只会删除pod，遗留下之前创建的声明。
+
+## 10.3 使用Statefulset
 
