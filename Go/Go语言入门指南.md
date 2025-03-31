@@ -125,3 +125,30 @@ Go语言中没有float类型（只有float32和float64）。没有double类型�
 - float64（+- 5 * 1e-324 -> 107 * 1e308）
 
 你可以通过增加前缀 0 来表示 8 进制数（如：077），增加前缀 0x 来表示 16 进制数（如：0xFF），以及使用 e 来表示 10 的连乘（如： 1e3 = 1000，或者 6.022e23 = 6.022 x 1e23）。
+
+Go 中不允许不同类型之间的混合使用，但是对于常量的类型限制非常少，因此允许常量之间的混合使用，下面这个程序很好地解释了这个现象（该程序无法通过编译）：
+
+```
+var a int
+var b int32
+a = 15
+b = a + a // 编译错误
+b = b + 5 // 因为5是常量，所以可以通过编译
+```
+
+
+下面的程序通过显式转换来避免这个问题：
+```
+var n int16 = 34
+var m int32
+//m == n // 编译错误
+m = int32(n)
+
+fmt.Printf("n is %d\n", n)
+fmt.Printf("m is %d\n", m)
+
+var a32BitInt int32
+var a32Float float32 = 3.141592693
+a32BitInt = int32(a32Float)
+fmt.Println(a32BitInt) // 3
+```
